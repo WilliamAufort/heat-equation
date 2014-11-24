@@ -1,0 +1,53 @@
+\documentclass{article}
+
+\usepackage[top=3cm, bottom=3cm, left=3cm, right=3cm]{geometry}
+
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage[a4paper,colorlinks,linkcolor=darkgray,citecolor=red,urlcolor=blue]{hyperref}
+
+\title{Algorithmique et programmation parallèle : DM}
+
+\newcommand{\X}[1]{{X}^{ #1 }}
+
+\author{William \textsc{AUFORT} et Raphaël \textsc{Charrondière}}
+
+\date{7 Décembre 2014}
+
+\begin{document}
+\maketitle
+
+\section*{Question 1}
+
+Pour calculer $\X{t+1}$ à partir de $\X{t}$ il faut appliquer la fonction $\delta$ à tous les éléments de $\X{t}$, soit $N^2$ fois.
+Donc, pour calculer $\X{t}$ à partir de $\X{0}$, il faut répéter cette opération $t$ fois, ce qui donne $t N^2$ applications de la fonction $\delta$ nécessaires.
+
+\section*{Question 2}
+
+Nous donnons ici l'implémentation de l'automate cellulaire de la partie 3, et non pas l'implémentation de l'automate général (où les neuf voisins sont nécessaires pour la mise à jour). On expliquera néanmoins les différences après la description de l'algorithme. \\
+
+Soient $p^2$ le nombre de processus disponibles, N la dimension de la grille. On suppose que $p$ divise $n$.
+L'idée est de donner à chaque processus de la grille un bloc de $\left( \frac{N}{p} \right) ^2$ éléments selon la même topologie que celle de la grille de processus. \\
+
+Considérons un processus $P_i$.
+Pour effectuer un calcul $\delta(x)$, on a besoin des cases au dessus, en dessous, à gauche et à droite.
+On peut calculer l'image de certains éléments de $P_i$ (ceux qui ne sont pas à la frontière) uniquement avec les valeurs connues de $P_i$. 
+Les éléments à la frontière nécessite une ou deux valeurs dont dispose les processus voisins de $P_i$ sur la grille.
+
+% TODO : figure Tikz comme celle que l'on a fait au tableau vendredi
+
+Chaque processus $P_i$ va donc recevoir deux lignes (provenant de ses voisins horizontaux) et deux colonnes (provenant de ses voisins latéraux), et lui-même doit envoyer ses lignes et ses colonnes.
+
+Il est intéressant de remarquer que ces envois et réceptions peuvent être fait en parallèle des calculs pour les éléments qui ne sont pas sur la frontière.
+
+L'algorithme final est donc le suivant :
+
+% TODO : Algorithme pour P_i
+	
+
+\end{document}
