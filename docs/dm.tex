@@ -11,6 +11,9 @@
 
 \usepackage[a4paper,colorlinks,linkcolor=darkgray,citecolor=red,urlcolor=blue]{hyperref}
 
+\usepackage{tikz}
+\usetikzlibrary{patterns} % pour hachures les figures
+
 \title{Algorithmique et programmation parallèle : DM}
 
 \newcommand{\X}[1]{{X}^{ #1 }}
@@ -34,16 +37,36 @@ Nous donnons ici l'implémentation de l'automate cellulaire de la partie 3, et n
 Soient $p^2$ le nombre de processus disponibles, N la dimension de la grille. On suppose que $p$ divise $n$.
 L'idée est de donner à chaque processus de la grille un bloc de $\left( \frac{N}{p} \right) ^2$ éléments selon la même topologie que celle de la grille de processus. \\
 
-Considérons un processus $P_i$.
-Pour effectuer un calcul $\delta(x)$, on a besoin des cases au dessus, en dessous, à gauche et à droite.
-On peut calculer l'image de certains éléments de $P_i$ (ceux qui ne sont pas à la frontière) uniquement avec les valeurs connues de $P_i$. 
-Les éléments à la frontière nécessite une ou deux valeurs dont dispose les processus voisins de $P_i$ sur la grille.
+Considérons un processus $P_i$. 
+Pour effectuer un calcul $\delta(x_{i,j})$, on a besoin en plus de $x_{i-1,j}$, $x_{i+1,j}$, $x_{i,j-1}$ et $x_{i,j+1}$.
+On peut calculer l'image des éléments de $P_i$ qui ne sont pas à la frontière (les éléments en rouge sur la figure \ref{datas}), $P_i$ n'a besoin que de valeurs qui lui sont connues.
+Les éléments à la frontière nécessite une ou deux valeurs dont disposent les processus voisins de $P_i$ sur la grille (les éléments en bleu sur la figure \ref{datas}).
 
-% TODO : figure Tikz comme celle que l'on a fait au tableau vendredi
+\begin{figure}[!h]
+  \centering
+	\begin{tikzpicture}[scale = 0.5]
+	  \draw[very thin, gray] (0,0) grid (8,8);
+	  \fill[pattern = north east lines, pattern color = red] (2,2) -- (6,2) -- (6,6) -- (2,6) -- cycle;
+	  \fill[pattern = north east lines, pattern color = blue] (0,1) -- (0,7) -- (1,7) -- (1,1) -- cycle;
+	  \fill[pattern = north east lines, pattern color = blue] (1,7) -- (1,8) -- (7,8) -- (7,7) -- cycle;
+	  \fill[pattern = north east lines, pattern color = blue] (7,1) -- (7,7) -- (8,7) -- (8,1) -- cycle;
+	  \fill[pattern = north east lines, pattern color = blue] (1,0) -- (1,1) -- (7,1) -- (7,0) -- cycle;
+	  \draw[very thick] (1,0) -- (1,8); \draw[very thick, dashed] (1,-1) -- (1,0); \draw[very thick, dashed] (1,8) -- (1,9);
+	  \draw[very thick] (0,1) -- (8,1); \draw[very thick, dashed] (-1,1) -- (0,1); \draw[very thick, dashed] (8,1) -- (9,1);
+	  \draw[very thick] (7,0) -- (7,8); \draw[very thick, dashed] (7,-1) -- (7,0); \draw[very thick, dashed] (7,8) -- (7,9);
+	  \draw[very thick] (0,7) -- (8,7); \draw[very thick, dashed] (-1,7) -- (0,7); \draw[very thick, dashed] (8,7) -- (9,7);
+      
+	\end{tikzpicture}
+  \caption{Schéma des données d'un processeur}
+  \label{datas}
+\end{figure}
 
-Chaque processus $P_i$ va donc recevoir deux lignes (provenant de ses voisins horizontaux) et deux colonnes (provenant de ses voisins latéraux), et lui-même doit envoyer ses lignes et ses colonnes.
+Chaque processus $P_i$ va donc recevoir deux lignes (provenant de ses voisins horizontaux) et deux colonnes (provenant de ses voisins verticaux).
+Et donc chaque $P_i$ doit également envoyer ces lignes et ces colonnes dont ont besoin les processus voisins, qui correspondent exactement aux éléments de la frontière.
 
-Il est intéressant de remarquer que ces envois et réceptions peuvent être fait en parallèle des calculs pour les éléments qui ne sont pas sur la frontière.
+Il est intéressant de remarquer que ces envois et réceptions peuvent être fait en parallèle, mais également pendant les calculs pour les éléments qui ne sont pas sur la frontière.
+
+\section*{Question 3}
 
 L'algorithme final est donc le suivant :
 
