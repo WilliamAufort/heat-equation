@@ -14,6 +14,8 @@
 \usepackage{tikz}
 \usetikzlibrary{patterns} % pour hachures les figures
 
+\usepackage[]{algorithm2e}
+
 \title{Algorithmique et programmation parallèle : DM}
 
 \newcommand{\X}[1]{{X}^{ #1 }}
@@ -55,7 +57,6 @@ Les éléments à la frontière nécessite une ou deux valeurs dont disposent le
 	  \draw[very thick] (0,1) -- (8,1); \draw[very thick, dashed] (-1,1) -- (0,1); \draw[very thick, dashed] (8,1) -- (9,1);
 	  \draw[very thick] (7,0) -- (7,8); \draw[very thick, dashed] (7,-1) -- (7,0); \draw[very thick, dashed] (7,8) -- (7,9);
 	  \draw[very thick] (0,7) -- (8,7); \draw[very thick, dashed] (-1,7) -- (0,7); \draw[very thick, dashed] (8,7) -- (9,7);
-      
 	\end{tikzpicture}
   \caption{Schéma des données d'un processeur}
   \label{datas}
@@ -68,9 +69,51 @@ Il est intéressant de remarquer que ces envois et réceptions peuvent être fai
 
 \section*{Question 3}
 
-L'algorithme final est donc le suivant :
+\subsection*{L'algorithme}
+
+L'algorithme final est présenté ci-dessous :
 
 % TODO : Algorithme pour P_i
-	
+
+\begin{algorithm}[H]
+  \KwData{Une matrice $X$}
+  \KwResult{La matrice $Y = \delta^{+}\left(X\right)$}
+  p $\longleftarrow$ NbProcs()\;
+  q $\longleftarrow$ MyNum()\;
+  N $\longleftarrow$ SizeOfGrid()\;
+  \For{i = 1 to (n-2)}{
+	\For{j = 1 to (n-2)} {
+	  Mettre à jour l'élément $x_{i,j}$
+    }
+  }
+  // send(lignes et colonnes) \;
+  // receive(lignes et colonnes) \;		
+  \For{j = 0 to (n-1)}{
+	Mettre à jour les elements $x_{0,j}$ et $x_{n-1,j}$ avec les données reçues\;
+  }
+  \For{i = 1 to (n-2)}{
+	Mettre à jour les elements $x_{i,0}$ et $x_{i,n-1}$ avec les données reçues\;
+  }
+ \caption{L'algorithme de la question 3}
+\end{algorithm}
+
+\subsection*{Complexité}
+
+Soient $\omega$ le temps nécessaire pour effectuer une mise à jour d'un élément $x_{i,j}$, $L$ et $b$ les variables vues en cours pour les temps de communications. % TODO : reformuler cette phrase
+La première partie de l'algorithme (premières mises à jour, send et receive) prend un temps $ max \left((\frac{n}{\sqrt{p}}-2)^2\omega, 4(L + (\frac{n}{\sqrt{p}}-2)b) \right) $.
+
+La seconde partie prend un temps $(2\frac{n}{\sqrt{p}} + 2(\frac{n}{\sqrt{p}}-2))\omega$ = $(\frac{4n}{\sqrt{p}}-2)\omega$.
+
+D'où une complexité temporelle finale : $max \left( \left(\frac{n}{\sqrt{p}}-2)^2\omega, 4(L + (\frac{(n-2)b}{\sqrt{p}}) \right) + \left(\frac{4n}{\sqrt{p}}-2 \right)\omega \right)$.
+
+\subsection*{Adaptation sur une grille non torique}
+
+On pose $m = \sqrt{p}$.
+Si on conserve avec exactitude le principe de l'algorithme, le seul problème consistera pour les processus en bordure de grille, lors des send/receive.
+Concrètement, si on note cette fois $P_{i,j}$ les processeurs ($(i,j) \in \left\{ 0, \dots,m-1\right\}$), les processus $P_{0,i}$ ne peuvent pas envoyer leur ligne au processus $P_{m-1,i}$ (même chose de $P_{i,0}$ vers $P_{i,m-1}$).
+Une solution pourrait être de les faire passer à travers tout le réseau, ce qui nécessiterai un temps : % TODO
+
+
+
 
 \end{document}
