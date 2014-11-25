@@ -27,16 +27,20 @@
 \begin{document}
 \maketitle
 
-\section*{Question 1}
+\section{Automate cellulaire}
+
+\underline{Note :} Dans toute cette partie, on note $p^2$ le nombre de processeurs, $N$ la taille de la grille (qui contient donc $N^2$ éléments).
+On supposera comme à l'habitude que $p$ divise $N$.
+
+\subsection*{Question 1}
 
 Pour calculer $\X{t+1}$ à partir de $\X{t}$ il faut appliquer la fonction $\delta$ à tous les éléments de $\X{t}$, soit $N^2$ fois.
 Donc, pour calculer $\X{t}$ à partir de $\X{0}$, il faut répéter cette opération $t$ fois, ce qui donne $t N^2$ applications de la fonction $\delta$ nécessaires.
 
-\section*{Question 2}
+\subsection*{Question 2}
 
 Nous donnons ici l'implémentation de l'automate cellulaire de la partie 3, et non pas l'implémentation de l'automate général (où les neuf voisins sont nécessaires pour la mise à jour). On expliquera néanmoins les différences après la description de l'algorithme. \\
 
-Soient $p^2$ le nombre de processus disponibles, N la dimension de la grille. On suppose que $p$ divise $n$.
 L'idée est de donner à chaque processus de la grille un bloc de $\left( \frac{N}{p} \right) ^2$ éléments selon la même topologie que celle de la grille de processus. \\
 
 Considérons un processus $P_i$. 
@@ -67,9 +71,7 @@ Et donc chaque $P_i$ doit également envoyer ces lignes et ces colonnes dont ont
 
 Il est intéressant de remarquer que ces envois et réceptions peuvent être fait en parallèle, mais également pendant les calculs pour les éléments qui ne sont pas sur la frontière.
 
-\section*{Question 3}
-
-\subsection*{L'algorithme}
+\subsection*{Question 3}
 
 L'algorithme final est présenté ci-dessous :
 
@@ -78,42 +80,42 @@ L'algorithme final est présenté ci-dessous :
 \begin{algorithm}[H]
   \KwData{Une matrice $X$}
   \KwResult{La matrice $Y = \delta^{+}\left(X\right)$}
-  p $\longleftarrow$ NbProcs()\;
+  p $\longleftarrow \sqrt(NbProcs())$\;
   q $\longleftarrow$ MyNum()\;
   N $\longleftarrow$ SizeOfGrid()\;
-  \For{i = 1 to (n-2)}{
-	\For{j = 1 to (n-2)} {
-	  Mettre à jour l'élément $x_{i,j}$
+  \For{i = 1 to (N-2)}{
+	\For{j = 1 to (N-2)} {
+	  Mettre à jour l'élément $x_{i,j}$ avec les données de $P_q$.
     }
   }
   // send(lignes et colonnes) \;
   // receive(lignes et colonnes) \;		
-  \For{j = 0 to (n-1)}{
+  \For{j = 0 to (N-1)}{
 	Mettre à jour les elements $x_{0,j}$ et $x_{n-1,j}$ avec les données reçues\;
   }
-  \For{i = 1 to (n-2)}{
+  \For{i = 1 to (N-2)}{
 	Mettre à jour les elements $x_{i,0}$ et $x_{i,n-1}$ avec les données reçues\;
   }
  \caption{L'algorithme de la question 3}
 \end{algorithm}
 
-\subsection*{Complexité}
+\subsubsection*{Complexité}
 
 Soient $\omega$ le temps nécessaire pour effectuer une mise à jour d'un élément $x_{i,j}$, $L$ et $b$ les variables vues en cours pour les temps de communications. % TODO : reformuler cette phrase
-La première partie de l'algorithme (premières mises à jour, send et receive) prend un temps $ max \left((\frac{n}{\sqrt{p}}-2)^2\omega, 4(L + (\frac{n}{\sqrt{p}}-2)b) \right) $.
+La première partie de l'algorithme (premières mises à jour, send et receive) prend un temps $max \left( (\frac{n}{p}-2)^2\omega, 4(L + (\frac{n}{p}-2)b) \right) $.
 
-La seconde partie prend un temps $(2\frac{n}{\sqrt{p}} + 2(\frac{n}{\sqrt{p}}-2))\omega$ = $(\frac{4n}{\sqrt{p}}-2)\omega$.
+La seconde partie prend un temps $(2\frac{n}{p} + 2(\frac{n}{p}-2))\omega$ = $(\frac{4n}{p}-2)\omega$.
 
-D'où une complexité temporelle finale : $max \left( \left(\frac{n}{\sqrt{p}}-2)^2\omega, 4(L + (\frac{(n-2)b}{\sqrt{p}}) \right) + \left(\frac{4n}{\sqrt{p}}-2 \right)\omega \right)$.
+D'où une complexité temporelle finale : $max \left( \left(\frac{n}{p}-2)^2\omega, 4(L + (\frac{(n-2)b}{p}) \right) + \left(\frac{4n}{p}-2 \right)\omega \right)$.
 
-\subsection*{Adaptation sur une grille non torique}
+\subsubsection*{Adaptation sur une grille non torique}
 
-On pose $m = \sqrt{p}$.
 Si on conserve avec exactitude le principe de l'algorithme, le seul problème consistera pour les processus en bordure de grille, lors des send/receive.
-Concrètement, si on note cette fois $P_{i,j}$ les processeurs ($(i,j) \in \left\{ 0, \dots,m-1\right\}$), les processus $P_{0,i}$ ne peuvent pas envoyer leur ligne au processus $P_{m-1,i}$ (même chose de $P_{i,0}$ vers $P_{i,m-1}$).
-Une solution pourrait être de les faire passer à travers tout le réseau, ce qui nécessiterai un temps : % TODO
+Concrètement, si on note cette fois $P_{i,j}$ les processeurs ($(i,j) \in \left\{ 0, \dots,p-1\right\}$), les processus $P_{0,i}$ ne peuvent pas envoyer leur ligne au processus $P_{p-1,i}$ (même chose de $P_{i,0}$ vers $P_{i,p-1}$).
+Une solution pourrait être de les faire passer à travers toute une ligne (respectivement toute une colonne), ce qui nécessiterai un temps $(p-1)(L + \frac{(n-2)b}{p})$ supplémentaire pour chaque envoi, soit un temps total de $4p(p-1)(L + \frac{(n-2)b}{p})$
+% TODO : Toutefois ces envois peuvent peut-être se faire en parallèle d'autres calculs... Il faudrait réfléchir à cela.
 
-
+\subsubsection*{Et sur une topologie en anneau ?}
 
 
 \end{document}
