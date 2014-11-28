@@ -41,12 +41,12 @@ Donc, pour calculer $\X{t}$ à partir de $\X{0}$, il faut répéter cette opéra
 
 Nous donnons ici l'implémentation de l'automate cellulaire de la partie 3, et non pas l'implémentation de l'automate général (où les neuf voisins sont nécessaires pour la mise à jour). On expliquera néanmoins les différences après la description de l'algorithme. \\
 
-L'idée est de donner à chaque processus de la grille un bloc de $\left( \frac{N}{p} \right) ^2$ éléments selon la même topologie que celle de la grille de processus. \\
+L'idée est de disposer les processus selon une grille. Chaque processus dispose d'un bloc de $\left( \frac{N}{p} \right) ^2$ éléments.\\
 
 Considérons un processus $P_i$. 
 Pour effectuer un calcul $\delta(x_{i,j})$, on a besoin en plus de $x_{i-1,j}$, $x_{i+1,j}$, $x_{i,j-1}$ et $x_{i,j+1}$.
 On peut calculer l'image des éléments de $P_i$ qui ne sont pas à la frontière (les éléments en rouge sur la figure \ref{datas}), $P_i$ n'a besoin que de valeurs qui lui sont connues.
-Les éléments à la frontière nécessite une ou deux valeurs dont disposent les processus voisins de $P_i$ sur la grille (les éléments en bleu sur la figure \ref{datas}).
+Les éléments à la frontière nécessitent quant à eux une ou deux valeurs dont disposent les processus voisins de $P_i$ sur la grille (les éléments en bleu sur la figure \ref{datas}) pour pouvoir être mis à jour.
 
 \begin{figure}[!h]
   \centering
@@ -62,14 +62,18 @@ Les éléments à la frontière nécessite une ou deux valeurs dont disposent le
 	  \draw[very thick] (7,0) -- (7,8); \draw[very thick, dashed] (7,-1) -- (7,0); \draw[very thick, dashed] (7,8) -- (7,9);
 	  \draw[very thick] (0,7) -- (8,7); \draw[very thick, dashed] (-1,7) -- (0,7); \draw[very thick, dashed] (8,7) -- (9,7);
 	\end{tikzpicture}
-  \caption{Schéma des données d'un processeur}
+  \caption{Schéma des données d'un processeur. Les données en rouge peuvent être mises à jour par le processus, alors que les autres nécessitent les données en bleu des processus voisins.}
   \label{datas}
 \end{figure}
 
 Chaque processus $P_i$ va donc recevoir deux lignes (provenant de ses voisins horizontaux) et deux colonnes (provenant de ses voisins verticaux).
-Et donc chaque $P_i$ doit également envoyer ces lignes et ces colonnes dont ont besoin les processus voisins, qui correspondent exactement aux éléments de la frontière.
+Et donc chaque $P_i$ doit également envoyer les lignes (respectivement les colonnes) supérieures et inférieures dont ont besoin les processus voisins horizontaux (repectivement verticaux), qui correspondent exactement aux éléments de la frontière.
 
 Il est intéressant de remarquer que ces envois et réceptions peuvent être fait en parallèle, mais également pendant les calculs pour les éléments qui ne sont pas sur la frontière.
+
+\paragraph{Cas général}
+
+Dans le cas général, il y a une petite subtilité. Les quatres éléments aux "coins" doivent disposer chacun d'un élément en plus des processus voisins diagonaux. Dans le cas général, il faut donc également envoyer quatre données supplémentaires (les quatre coins) aux quatres processus qui en ont besoin.
 
 \subsection*{Question 3}
 
@@ -80,7 +84,7 @@ L'algorithme final est présenté ci-dessous :
 \begin{algorithm}[H]
   \KwData{Une matrice $X$}
   \KwResult{La matrice $Y = \delta^{+}\left(X\right)$}
-  p $\longleftarrow \sqrt(NbProcs())$\;
+  p $\longleftarrow \sqrt{NbProcs()}$\;
   q $\longleftarrow$ MyNum()\;
   N $\longleftarrow$ SizeOfGrid()\;
   \For{i = 1 to (N-2)}{
@@ -88,13 +92,13 @@ L'algorithme final est présenté ci-dessous :
 	  Mettre à jour l'élément $x_{i,j}$ avec les données de $P_q$.
     }
   }
-  // send(lignes et colonnes) \;
-  // receive(lignes et colonnes) \;		
+  // send(les deux lignes et les deux colonnes) \;
+  // receive(les deux lignes et les deux colonnes) \;		
   \For{j = 0 to (N-1)}{
-	Mettre à jour les elements $x_{0,j}$ et $x_{n-1,j}$ avec les données reçues\;
+	Mettre à jour les elements $x_{0,j}$ et $x_{N-1,j}$ avec les données reçues\;
   }
   \For{i = 1 to (N-2)}{
-	Mettre à jour les elements $x_{i,0}$ et $x_{i,n-1}$ avec les données reçues\;
+	Mettre à jour les elements $x_{i,0}$ et $x_{i,N-1}$ avec les données reçues\;
   }
  \caption{L'algorithme de la question 3}
 \end{algorithm}
@@ -102,11 +106,13 @@ L'algorithme final est présenté ci-dessous :
 \subsubsection*{Complexité}
 
 Soient $\omega$ le temps nécessaire pour effectuer une mise à jour d'un élément $x_{i,j}$, $L$ et $b$ les variables vues en cours pour les temps de communications. % TODO : reformuler cette phrase
-La première partie de l'algorithme (premières mises à jour, send et receive) prend un temps $max \left( (\frac{n}{p}-2)^2\omega, 4(L + (\frac{n}{p}-2)b) \right) $.
+La première partie de l'algorithme (premières mises à jour, send et receive) prend un temps $max \left( (\frac{N}{p}-2)^2\omega, 4(L + (\frac{N}{p}-2)b) \right) $.
 
-La seconde partie prend un temps $(2\frac{n}{p} + 2(\frac{n}{p}-2))\omega$ = $(\frac{4n}{p}-2)\omega$.
+La seconde partie prend un temps $(\frac{2N}{p} + 2(\frac{N}{p}-2))\omega$ = $(\frac{4N}{p}-4)\omega$.
 
-D'où une complexité temporelle finale : $max \left( \left(\frac{n}{p}-2)^2\omega, 4(L + (\frac{(n-2)b}{p}) \right) + \left(\frac{4n}{p}-2 \right)\omega \right)$.
+D'où une complexité temporelle finale : $T(N,p) = max \left( \left(\frac{N}{p}-2\right)^2\omega, 4\left(L + \left(\frac{(N-2)b}{p}\right) \right) \right)  + \left(\frac{4N}{p}-4 \right)\omega $.
+
+\underline{Remarque :} Quand $N$ tend vers $+\infty$, $T(N,p) \underset{N \rightarrow +\infty}{\thicksim} \left(\frac{N}{p}-2\right)^2\omega \underset{N \rightarrow +\infty}{\thicksim} \frac{N^2\omega}{p^2}$. 
 
 \subsubsection*{Adaptation sur une grille non torique}
 
@@ -117,5 +123,57 @@ Une solution pourrait être de les faire passer à travers toute une ligne (resp
 
 \subsubsection*{Et sur une topologie en anneau ?}
 
+\section{Average automata}
+
+\subsection*{Question 4} 
+
+Voir le fichier \texttt{average.c}.
+
+\subsection*{Question 5}
+
+% TODO : mise en page et finir preuve
+
+Pour prouver que $\delta^+$ est linéaire, il suffit de montrer que \\
+%\delta \left(
+\begin{tabular}{|c|c|c|}
+ \hline
+ a & b & c \\
+ \hline
+ d & e & f \\
+ \hline 
+ g & h & i \\
+ \hline
+\end{tabular}  
+ 
+%+
+\begin{tabular}{|c|c|c|}
+ \hline
+ a' & b' & c' \\
+ \hline
+ d' & e' & f' \\
+ \hline 
+ g' & h' & i' \\
+ \hline
+\end{tabular}  
+
+%\right)
+
+%=
+
+%\delta \left(
+
+\begin{tabular}{|c|c|c|}
+ \hline
+ a + a' & b + b' & c + c' \\
+ \hline
+ d + d' & e + e' & f + f' \\
+ \hline 
+ g + g' & h + h' & i + i' \\
+ \hline
+\end{tabular}  
+
+%\right)
+
+Grâce à la linéarité, on peut écrire l'opération $\delta$ sous la forme d'une matrice. % TODO
 
 \end{document}
