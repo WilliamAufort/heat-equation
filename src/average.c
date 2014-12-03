@@ -62,6 +62,11 @@ void free_datas()
 	free(last_row);
 	free(first_col);
 	free(last_col);
+	free(work_matrix);
+	free(neighbor_first_row);
+	free(neighbor_last_row);
+	free(neighbor_first_col);
+	free(neighbor_last_col);
 }
 
 /*********************\
@@ -101,24 +106,19 @@ void compute_image(double p)
 	int my_row = my_id / nb_col;
 	int my_col_mid = my_col-2;
 	int my_row_mid = my_row-2;
-	// init buffers for receiving
-	//double* tmp_first_row = malloc(sizeof(double)*/*size*/);
-	//double* tmp_last_row = malloc(sizeof(double)*/*size*/);
-	//double* tmp_first_col = malloc(sizeof(double)*/*size*/);
-	//double* tmp_last_col = malloc(sizeof(double)*/*size*/);
 
 	// Scatter data
 
 	// Do the sends
 	int west,east,north,south;
-	east=(my_row + 1) % nb_row;
-	west=(my_row - 1 + nb_row) % nb_row;//ensure index >0
-	north=(my_col - 1 + nb_col) % nb_col;
-	south=(my_col + 1) % nb_col;
-	MPI_Send(first_row, nb_col, MPI_DOUBLE, west, 1, MPI_VERTICAL);
-	MPI_Send(last_row, nb_col, MPI_DOUBLE, east, 1, MPI_VERTICAL);
-	MPI_Send(first_col, nb_row, MPI_DOUBLE, north, 1, MPI_HORIZONTAL);
-	MPI_Send(last_col, nb_row, MPI_DOUBLE, south, 1, MPI_HORIZONTAL);
+	north=(my_row + 1) % nb_row;
+	south=(my_row - 1 + nb_row) % nb_row;//ensure index >0
+	east=(my_col - 1 + nb_col) % nb_col;
+	west=(my_col + 1) % nb_col;
+	MPI_Send(first_row, nb_col, MPI_DOUBLE, norh, 1, MPI_VERTICAL);
+	MPI_Send(last_row, nb_col, MPI_DOUBLE, south, 1, MPI_VERTICAL);
+	MPI_Send(first_col, nb_row, MPI_DOUBLE, west, 1, MPI_HORIZONTAL);
+	MPI_Send(last_col, nb_row, MPI_DOUBLE, east, 1, MPI_HORIZONTAL);
     
     // Do the computations
 	int i, j;
@@ -197,19 +197,14 @@ void compute_image(double p)
 
 
 	// Do the receives 
-	MPI_Recv(neighbor_first_row, nb_col, MPI_DOUBLE, (my_row + 1) % nb_row, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
-	MPI_Recv(neighbor_last_row, nb_col, MPI_DOUBLE, (my_row - 1) % nb_row, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
-	MPI_Recv(neighbor_first_col, nb_row, MPI_DOUBLE, (my_col + 1) % nb_col, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
-	MPI_Recv(neighbor_last_col, nb_row, MPI_DOUBLE, (my_row - 1) % nb_col, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_first_row, nb_col, MPI_DOUBLE, north, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_last_row, nb_col, MPI_DOUBLE, south, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_first_col, nb_row, MPI_DOUBLE, south, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_last_col, nb_row, MPI_DOUBLE, north, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
 
 	// Do the lasts computations TODO
 
-	// Free the buffers
- 
-	free(tmp_first_row);
-	free(tmp_first_col);
-	free(tmp_last_row);
-	free(tmp_last_col);
+
 
 	// Reconstruct the matrix
 }
