@@ -51,6 +51,11 @@ void init_datas()
 	neighbor_last_row = malloc(sizeof(double)*nb_col);
 	neighbor_first_col = malloc(sizeof(double)*(nb_row));
 	neighbor_last_col = malloc(sizeof(double)*(nb_row));
+	work_first_row = malloc(sizeof(double)*nb_col);
+	work_last_row = malloc(sizeof(double)*nb_col);
+	work_first_col = malloc(sizeof(double)*(nb_row));
+	work_last_col = malloc(sizeof(double)*(nb_row));
+
 }
 
 /* free data */
@@ -63,6 +68,10 @@ void free_datas()
 	free(first_col);
 	free(last_col);
 	free(work_matrix);
+	free(work_first_row);
+	free(work_last_row);
+	free(work_first_col);
+	free(work_last_col);
 	free(neighbor_first_row);
 	free(neighbor_last_row);
 	free(neighbor_first_col);
@@ -88,6 +97,13 @@ void init_communicators()
 {
   MPI_Comm_split(MPI_COMM_WORLD, my_id / nb_col, my_id % nb_col, &MPI_HORIZONTAL);
   MPI_Comm_split(MPI_COMM_WORLD, my_id % nb_col, my_id / nb_col, &MPI_VERTICAL);
+}
+
+void swap(double** l1,double** l2)
+{
+	double* l3=*l1;
+	*l1=*l2;
+	*l2=l3;
 }
 
 /* average function */
@@ -125,7 +141,6 @@ void compute_image(double p)
 	//middle
 	for(i = 1; i < nb_col_mid-1, i++) {
 		for(j = 1; j < nb_row_mid-1, j++) {
-			// update TODO
 			work_matrix[i+nb_col*j]=average(matrix[i+nb_col*j],matrix[i+nb_col*(j-1)],matrix[i+nb_col*(j+1)],matrix[i+1+nb_col*j]+matrix[i-1+nb_col*j]);	
         	}
 	}
@@ -202,11 +217,82 @@ void compute_image(double p)
 	MPI_Recv(neighbor_first_col, nb_row, MPI_DOUBLE, south, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
 	MPI_Recv(neighbor_last_col, nb_row, MPI_DOUBLE, north, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
 
-	// Do the lasts computations TODO
+	// Do the lasts computations 
+	for(i=1;i < nb_col-1;i++)
+	{
+		work_first_row[i]=average(
+			first_row[i],
+			neighbor_first_row[i],
+			matrix[i-1],
+			first_row[i+1],
+			first_row[i-1]
+		);
+		work_last_row[i]=average(
+			last_row[i],
+			matrix[nb_col_mid*(nb_row_mid-1)+i-1],
+			neighbor_last_row[i],
+			last_row[i+1],
+			last_row[i-1]
+		);
+	}
+
+	for(j=1;j < nb_row-1;j++)
+	{
+		work_first_col[j]=average(
+			first_col[j],
+			first_col[j+1],
+			first_col[j-1],
+			matrix[nb_col_mid*(j-1)],
+			neighbor_first_col[j]
+		);
+		work_last_col[j]=average(
+			last_col[j],
+			last_col[j+1],
+			last_col[j-1],
+			neighbor_last_col[j]
+			matrix[nb_col_mid*j-1],
+		);
+	}
+	//Corners
+	work_first_row[0]=average(first_row[0],
+		neighbor_first_row[0],
+		first_col[1],
+		first_row[1],
+		neighbor_first_col[0]
+	);
+	work_first_col[0]=work_first_row[0];
+
+	work_first_row[nb_col-1]=average(first_row[nb_col-1],
+		neighbor_first_row[nb_col-1],
+		last_col[1],
+		neighbor_last_col[0],
+		first_row[nb_col-2]
+	);
+	work_last_col[0]=work_first_row[nb_col-1];
 
 
+	work_first_col[nb_col-1]=average(first_col[nb_col-1],
+		first_col[nb_row-2],
+		neighbor_last_row[0],
+		last_row[1],
+		neighbor_first_col[nb_row-1]
+	);
+	work_last_row[0]=work_first_col[nb_col-1];
 
-	// Reconstruct the matrix
+	work_last_col[nb_row-1]=average(last_col[nb_row-1],
+		last_col[nb_row-2],
+		neighbor_last_row[nb_col-1],
+		neighbor_last_col[nb_row-1],
+		last_row[nb_col-2]
+	);
+	work_last_row[nb_col-1]=work_last_col[nb_row-1];
+	
+	// Reconstruct the matrix (swaping)
+	swap(&work_matrix,&matrix);
+	swap(&work_first_row,&first_row);
+	swap(&work_last_row,&last_row);
+	swap(&work_first_col,&first_col);
+	swap(&work_last_col,&last_col);
 }
 
 /*************\
@@ -223,7 +309,9 @@ int main(int argc, char* argv[])
   init_datas();
   // init_matrix(); TODO
 
-  compute_image();
+	compute_image();
+
+	free_datas();
 
   MPI_Finalize();
 
