@@ -32,6 +32,7 @@ int i_col,i_row;         // position of the processor in the grid
 /* Processors data */
 
 double* matrix, first_row, last_row, first_col, last_col;
+double* work_matrix, neighbor_first_row, neighbor_last_row, neighbor_first_col, neighbor_last_col;
 
 /* initialize data */
 
@@ -40,17 +41,19 @@ void init_datas()
 	nb_col = (int)sqrt(nb_proc);
 	nb_row = nb_col; // assert square grid
 	
-	matrix = malloc(sizeof(double)*nb_col*nb_row);
+	matrix = malloc(sizeof(double)*(nb_col-2)*(nb_row-2));
+	work_matrix = malloc(sizeof(double)*(nb_col-2)*(nb_row-2));
 	first_row = malloc(sizeof(double)*nb_col);
 	last_row = malloc(sizeof(double)*nb_col);
-	first_col = malloc(sizeof(double)*nb_row);
-	last_col = malloc(sizeof(double)*nb_row);
+	first_col = malloc(sizeof(double)*(nb_row));
+	last_col = malloc(sizeof(double)*(nb_row));
 }
 
 /* free data */
 
 void free_datas() 
 {
+	free(matrix);
 	free(first_row);
 	free(last_row);
 	free(first_col);
@@ -87,33 +90,39 @@ double average(double center, double north, double south, double east, double we
 
 /* the core of the parallel algorithm */
 
-void compute_image() 
+void compute_image(double p) 
 {
 	// usefull variables
 	int my_col = my_id % nb_col;
 	int my_row = my_id / nb_col;
 
 	// init buffers for receiving
-	double* tmp_first_row = malloc(sizeof(double)*/*size*/);
-	double* tmp_last_row = malloc(sizeof(double)*/*size*/);
-	double* tmp_first_col = malloc(sizeof(double)*/*size*/);
-	double* tmp_last_col = malloc(sizeof(double)*/*size*/);
+	//double* tmp_first_row = malloc(sizeof(double)*/*size*/);
+	//double* tmp_last_row = malloc(sizeof(double)*/*size*/);
+	//double* tmp_first_col = malloc(sizeof(double)*/*size*/);
+	//double* tmp_last_col = malloc(sizeof(double)*/*size*/);
 
 	// Scatter data
 
 	// Do the sends
-    MPI_Send(first_row, nb_col, MPI_DOUBLE, (my_row - 1) % nb_row, 1, MPI_VERTICAL);
-    MPI_Send(last_row, nb_col, MPI_DOUBLE, (my_row + 1) % nb_row, 1, MPI_VERTICAL);
-
-    MPI_Send(first_col, nb_row, MPI_DOUBLE, (my_col - 1) % nb_col, 1, MPI_HORIZONTAL);
-    MPI_Send(last_col, nb_row, MPI_DOUBLE, (my_col + 1) % nb_col, 1, MPI_VERTICAL);
+	int west,east,north,south;
+	east=(my_row + 1) % nb_row;
+	west=(my_row - 1 + nb_row) % nb_row;//ensure index >0
+	north=(my_col - 1 + nb_col) % nb_col;
+	south=(my_col + 1) % nb_col;
+	MPI_Send(first_row, nb_col, MPI_DOUBLE, west, 1, MPI_VERTICAL);
+	MPI_Send(last_row, nb_col, MPI_DOUBLE, east, 1, MPI_VERTICAL);
+	MPI_Send(first_col, nb_row, MPI_DOUBLE, north, 1, MPI_HORIZONTAL);
+	MPI_Send(last_col, nb_row, MPI_DOUBLE, south, 1, MPI_HORIZONTAL);
     
     // Do the computations
 	int i, j;
-	for(i = 0; i < /*size*/, i++) {
-		for(i = 0; j < /*size*/, j++) {
+	//first line
+	for(i = 1; i < nb_col-2, i++) {
+		for(j = 1; j < nb_row-2, j++) {
 			// update TODO
-        }
+			work_matrix[i+nb_col*j]=(1-p)*matrix[i+nb_col*j]+(p/4.0)*(matrix[i+nb_col*j+1]+matrix[i+nb_col*j-1]+matrix[i+1+nb_col*j]+matrix[i-1+nb_col*j])
+        	}
 	}
 
     // Do the receives 
