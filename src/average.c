@@ -47,6 +47,10 @@ void init_datas()
 	last_row = malloc(sizeof(double)*nb_col);
 	first_col = malloc(sizeof(double)*(nb_row));
 	last_col = malloc(sizeof(double)*(nb_row));
+	neighbor_first_row = malloc(sizeof(double)*nb_col);
+	neighbor_last_row = malloc(sizeof(double)*nb_col);
+	neighbor_first_col = malloc(sizeof(double)*(nb_row));
+	neighbor_last_col = malloc(sizeof(double)*(nb_row));
 }
 
 /* free data */
@@ -85,7 +89,7 @@ void init_communicators()
 
 double average(double center, double north, double south, double east, double west, double p)
 {
-  return (1-p)*center + (north + south + east + west) / 4;
+  return (1.0-p)*center + p*(north + south + east + west) / 4.0;
 }
 
 /* the core of the parallel algorithm */
@@ -95,7 +99,8 @@ void compute_image(double p)
 	// usefull variables
 	int my_col = my_id % nb_col;
 	int my_row = my_id / nb_col;
-
+	int my_col_mid = my_col-2;
+	int my_row_mid = my_row-2;
 	// init buffers for receiving
 	//double* tmp_first_row = malloc(sizeof(double)*/*size*/);
 	//double* tmp_last_row = malloc(sizeof(double)*/*size*/);
@@ -117,19 +122,85 @@ void compute_image(double p)
     
     // Do the computations
 	int i, j;
-	//first line
-	for(i = 1; i < nb_col-2, i++) {
-		for(j = 1; j < nb_row-2, j++) {
+	//middle
+	for(i = 1; i < nb_col_mid-1, i++) {
+		for(j = 1; j < nb_row_mid-1, j++) {
 			// update TODO
-			work_matrix[i+nb_col*j]=(1-p)*matrix[i+nb_col*j]+(p/4.0)*(matrix[i+nb_col*j+1]+matrix[i+nb_col*j-1]+matrix[i+1+nb_col*j]+matrix[i-1+nb_col*j])
+			work_matrix[i+nb_col*j]=average(matrix[i+nb_col*j],matrix[i+nb_col*(j-1)],matrix[i+nb_col*(j+1)],matrix[i+1+nb_col*j]+matrix[i-1+nb_col*j]);	
         	}
 	}
+	work_matrix[0]=average(
+		matrix[0],
+		first_row[1],
+		matrix[nb_col_mid],
+		matrix[1],
+		first_col[1]
+	);
+	work_matrix[nb_col_mid-1]=average(
+		matrix[nb_col_mid-1],
+		first_row[nb_col_mid],
+		matrix[nb_col_mid+nb_col_mid-1],
+		last_col[1],
+		matrix[nb_col_mid-2]
+	);
+	work_matrix[nb_col_mid*(nb_row_mid-1)]=average(
+		matrix[nb_col_mid*(nb_row_mid-1)],
+		matrix[nb_col_mid*(nb_row_mid-1)-nb_col_mid],
+		last_row[1],
+		matrix[nb_col*(nb_row_mid-1)+1],
+		first_col[nb_row_mid-2]
+	);
+	[nb_col_mid*nb_row_mid-1]=average(
+		matrix[nb_col_mid*nb_row_mid-1],
+		matrix[nb_col_mid*nb_row_mid-1-nb_col_mid],
+		last_row[nb_col_mid],
+		last_col[nb_row_mid],
+		matrix[nb_col_mid*nb_row_mid-2]
+	);
 
-    // Do the receives 
-    MPI_Recv(tmp_first_row, nb_col, MPI_DOUBLE, (my_row + 1) % nb_row, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
-	MPI_Recv(tmp_last_row, nb_col, MPI_DOUBLE, (my_row - 1) % nb_row, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
-	MPI_Recv(tmp_first_col, nb_row, MPI_DOUBLE, (my_col + 1) % nb_col, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
-	MPI_Recv(tmp_last_col, nb_row, MPI_DOUBLE, (my_row - 1) % nb_col, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
+	//lines
+	for(i=1;i < nb_col_mid-1;i++)
+	{
+		work_matrix[i]=average(
+			matrix[i],
+			first_row[i+1],
+			matrix[i+nb_col_mid],
+			matrix[i+1],
+			matrix[i-1]
+		);
+		work_matrix[nb_col_mid*(nb_row_mid-1)+i]=average(
+			matrix[nb_col_mid*(nb_row_mid-1)+i],
+			matrix[nb_col_mid*(nb_row_mid-2)+i],
+			last_row[i+1],
+			matrix[nb_col_mid*(nb_row_mid-1)+i+1],
+			matrix[nb_col_mid*(nb_row_mid-1)+i-1]
+		);
+	}
+	//cols
+	for(j=1;i < nb_row_mid-1;j++)
+	{
+		work_matrix[nb_col_mid*j]=average(
+			matrix[nb_col_mid*j],
+			matrix[nb_col_mid*(j-1)],
+			matrix[nb_col_mid*(j+1)],
+			matrix[nb_col_mid*j+1],
+			first_col[j+1]
+		);
+		work_matrix[nb_col_mid*(j+1)-1]=average(
+			matrix[nb_col_mid*(j+1)-1],
+			matrix[nb_col_mid*j-1],
+			matrix[nb_col_mid*(j+2)-1],
+			last_col[j+1],
+			matrix[nb_col_mid*(j+1)-2]
+		);
+	}
+
+
+	// Do the receives 
+	MPI_Recv(neighbor_first_row, nb_col, MPI_DOUBLE, (my_row + 1) % nb_row, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_last_row, nb_col, MPI_DOUBLE, (my_row - 1) % nb_row, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_first_col, nb_row, MPI_DOUBLE, (my_col + 1) % nb_col, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_last_col, nb_row, MPI_DOUBLE, (my_row - 1) % nb_col, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
 
 	// Do the lasts computations TODO
 
