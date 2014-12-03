@@ -39,12 +39,12 @@ Donc, pour calculer $\X{t}$ à partir de $\X{0}$, il faut répéter cette opéra
 
 \subsection*{Question 2}
 
-Nous donnons ici l'implémentation de l'automate cellulaire de la partie 3, et non pas l'implémentation de l'automate général (où les neuf voisins sont nécessaires pour la mise à jour). On expliquera néanmoins les différences après la description de l'algorithme. \\
+Nous donnons ici l'implémentation de l'automate cellulaire de la partie 3, et non pas l'implémentation de l'automate général (où les neuf voisins sont nécessaires pour la mise à jour). Nous expliquerons les différences après la description de l'algorithme. \\
 
-L'idée est de disposer les processus selon une grille. Chaque processus dispose d'un bloc de $\left( \frac{N}{p} \right) ^2$ éléments.\\
+L'idée est de disposer les processus selon une grille. processus Chaque dispose d'un bloc de $\left( \frac{N}{p} \right) ^2$ éléments.\\
 
-Considérons un processus $P_i$. 
-Pour effectuer un calcul $\delta(x_{i,j})$, on a besoin en plus de $x_{i-1,j}$, $x_{i+1,j}$, $x_{i,j-1}$ et $x_{i,j+1}$.
+Considérons un processus $P$. Celui-ci dispose des données $(\widehat{x_{i,j}})$.
+Pour effectuer un calcul $\delta(\widehat{x_{i,j}})$, P a besoin en plus de $\widehat{x_{i-1,j}}$, $\widehat{x_{i+1,j}}$, $\widehat{x_{i,j-1}}$ et $\widehat{x_{i,j+1}}$.
 On peut calculer l'image des éléments de $P_i$ qui ne sont pas à la frontière (les éléments en rouge sur la figure \ref{datas}), $P_i$ n'a besoin que de valeurs qui lui sont connues.
 Les éléments à la frontière nécessitent quant à eux une ou deux valeurs dont disposent les processus voisins de $P_i$ sur la grille (les éléments en bleu sur la figure \ref{datas}) pour pouvoir être mis à jour.
 
@@ -87,18 +87,18 @@ L'algorithme final est présenté ci-dessous :
   p $\longleftarrow \sqrt{NbProcs()}$\;
   q $\longleftarrow$ MyNum()\;
   N $\longleftarrow$ SizeOfGrid()\;
-  \For{i = 1 to (N-2)}{
-	\For{j = 1 to (N-2)} {
-	  Mettre à jour l'élément $x_{i,j}$ avec les données de $P_q$.
+  \For{i = 1 to ($\frac{N}{p}-2$)}{
+	\For{j = 1 to ($\frac{N}{p}-2$)} {
+	  Mettre à jour l'élément $\widehat{x_{i,j}}$ avec les données de $P_q$.
     }
   }
   // send(les deux lignes et les deux colonnes) \;
   // receive(les deux lignes et les deux colonnes) \;		
-  \For{j = 0 to (N-1)}{
-	Mettre à jour les elements $x_{0,j}$ et $x_{N-1,j}$ avec les données reçues\;
+  \For{j = 0 to ($\frac{N}{p}-1$)}{
+	Mettre à jour les elements $\widehat{x_{0,j}}$ et $\widehat{x_{N-1,j}}$ avec les données reçues\;
   }
-  \For{i = 1 to (N-2)}{
-	Mettre à jour les elements $x_{i,0}$ et $x_{i,N-1}$ avec les données reçues\;
+  \For{i = 1 to ($\frac{N}{p}-2$)}{
+	Mettre à jour les elements $\widehat{x_{i,0}}$ et $\widehat{x_{i,N-1}}$ avec les données reçues\;
   }
  \caption{L'algorithme de la question 3}
 \end{algorithm}
@@ -131,49 +131,13 @@ Voir le fichier \texttt{average.c}.
 
 \subsection*{Question 5}
 
-% TODO : mise en page et finir preuve
+Pour prouver que $\delta^+$ est linéaire, il suffit de montrer que pour tous $(i,j) \in \mathbb{N}$, pour tout $k \in \mathbb{R}$, 
+$$(\delta^+(X+Y))_{i,j} = (\delta^+(X))_{i,j} + (\delta^+(Y))_{i,j} \quad \text{et} \quad (\delta^+(kX))_{i,j} = k(\delta^+(X))_{i,j}$$.
 
-Pour prouver que $\delta^+$ est linéaire, il suffit de montrer que \\
-%\delta \left(
-\begin{tabular}{|c|c|c|}
- \hline
- a & b & c \\
- \hline
- d & e & f \\
- \hline 
- g & h & i \\
- \hline
-\end{tabular}  
- 
-%+
-\begin{tabular}{|c|c|c|}
- \hline
- a' & b' & c' \\
- \hline
- d' & e' & f' \\
- \hline 
- g' & h' & i' \\
- \hline
-\end{tabular}  
+Sachant que $(\delta^+(X))_{i,j} = (1-p)x_{i,j} + p \quad \frac{x_{i,j+1} + x_{i,j-1} + x_{i+1,j} + x_{i-1,j}}{4}$, le résultat est immédiat.
 
-%\right)
+\subsection*{Question 10}
 
-%=
 
-%\delta \left(
-
-\begin{tabular}{|c|c|c|}
- \hline
- a + a' & b + b' & c + c' \\
- \hline
- d + d' & e + e' & f + f' \\
- \hline 
- g + g' & h + h' & i + i' \\
- \hline
-\end{tabular}  
-
-%\right)
-
-Grâce à la linéarité, on peut écrire l'opération $\delta$ sous la forme d'une matrice. % TODO
 
 \end{document}
