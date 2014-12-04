@@ -66,14 +66,33 @@ Les éléments à la frontière nécessitent quant à eux une ou deux valeurs do
   \label{datas}
 \end{figure}
 
-Chaque processus $P_i$ va donc recevoir deux lignes (provenant de ses voisins horizontaux) et deux colonnes (provenant de ses voisins verticaux).
-Et donc chaque $P_i$ doit également envoyer les lignes (respectivement les colonnes) supérieures et inférieures dont ont besoin les processus voisins horizontaux (repectivement verticaux), qui correspondent exactement aux éléments de la frontière.
+Chaque processus va donc recevoir deux lignes (provenant de ses voisins horizontaux) et deux colonnes (provenant de ses voisins verticaux).
+Chaque processus doit donc également envoyer les lignes (respectivement les colonnes) supérieures et inférieures dont ont besoin les processus voisins horizontaux (repectivement verticaux), qui correspondent exactement aux éléments de la frontière.
 
 Il est intéressant de remarquer que ces envois et réceptions peuvent être fait en parallèle, mais également pendant les calculs pour les éléments qui ne sont pas sur la frontière.
 
 \paragraph{Cas général}
 
-Dans le cas général, il y a une petite subtilité. Les quatres éléments aux "coins" doivent disposer chacun d'un élément en plus des processus voisins diagonaux. Dans le cas général, il faut donc également envoyer quatre données supplémentaires (les quatre coins) aux quatres processus qui en ont besoin.
+Dans le cas général, il y a une petite subtilité. Pour pouvoir mettre à jour les quatres éléments aux "coins", il faut disposer également d'une donnée de chaque processus voisin selon la diagonale. Mais cette donnée ne peut pas être transmise directement, à cause de la topologie de grille. Par contre, cette valeur est contenue dans une colonne échangée à un processus voisin de $P$ lors de la première étape (voir figure \ref{datas2}), ce qui permet de demander directement la valeur aux processus voisins.
+
+\begin{figure}[!h]
+  \centering
+	\begin{tikzpicture}[scale = 0.5]
+	  \draw[very thin, gray] (0,0) grid (8,8);
+	  \fill[pattern = north east lines, pattern color = red] (7,7) -- (7,8) -- (8,8) -- (8,7) -- cycle;
+	  \draw[thick,->] (7.5,7.5) -- (6.5,7.5);
+	  \draw[thick,->] (6.5,7.5) -- (6.5,6.5);
+	  \draw (4,9) node[scale=1.5]{$P_1$};
+	  \draw (4,4) node[fill=white,scale=1.5]{$P_2$};
+	  \draw (9,9) node[scale=1.5]{$P_3$};
+	  \draw[very thick] (1,0) -- (1,8); \draw[very thick, dashed] (1,-1) -- (1,0); \draw[very thick, dashed] (1,8) -- (1,9);
+	  \draw[very thick] (0,1) -- (8,1); \draw[very thick, dashed] (-1,1) -- (0,1); \draw[very thick, dashed] (8,1) -- (9,1);
+	  \draw[very thick] (7,0) -- (7,8); \draw[very thick, dashed] (7,-1) -- (7,0); \draw[very thick, dashed] (7,8) -- (7,9);
+	  \draw[very thick] (0,7) -- (8,7); \draw[very thick, dashed] (-1,7) -- (0,7); \draw[very thick, dashed] (8,7) -- (9,7);
+	\end{tikzpicture}
+  \caption{Transmission des 4 données manquantes. La donnée (en rouge) qui intéresse $P_2$ est transmise à $P_1$ lors de la première phase où $P_3$ transmet sa colonne. $P_2$ peut donc demander cette données directement à $P_1$.}
+  \label{datas2}
+\end{figure}
 
 \subsection*{Question 3}
 
@@ -105,7 +124,7 @@ L'algorithme final est présenté ci-dessous :
 
 \subsubsection*{Complexité}
 
-Soient $\omega$ le temps nécessaire pour effectuer une mise à jour d'un élément $x_{i,j}$, $L$ et $b$ les variables vues en cours pour les temps de communications. % TODO : reformuler cette phrase
+Soit $\omega$ le temps nécessaire pour effectuer une mise à jour d'un élément $x_{i,j}$.
 La première partie de l'algorithme (premières mises à jour, send et receive) prend un temps $max \left( (\frac{N}{p}-2)^2\omega, 4(L + (\frac{N}{p}-2)b) \right) $.
 
 La seconde partie prend un temps $(\frac{2N}{p} + 2(\frac{N}{p}-2))\omega$ = $(\frac{4N}{p}-4)\omega$.
@@ -123,6 +142,8 @@ Une solution pourrait être de les faire passer à travers toute une ligne (resp
 
 \subsubsection*{Et sur une topologie en anneau ?}
 
+Sur une topologie en anneau la situation se complique... Si on numérote les processus de gauche à droite et de haut en bas, les transmissions verticales devront passer par exactement $p-1$ processus intermédiaires avant d'arriver à destination. Toutefois, on peut réutiliser la technique vue en cours pour le broadcast généralisé (où toutes les données transitent en même temps) pour les deux transmissions verticales que doit accomplir chaque processus.
+
 \section{Average automata}
 
 \subsection*{Question 4} 
@@ -134,7 +155,17 @@ Voir le fichier \texttt{average.c}.
 Pour prouver que $\delta^+$ est linéaire, il suffit de montrer que pour tous $(i,j) \in \mathbb{N}$, pour tout $k \in \mathbb{R}$, 
 $$(\delta^+(X+Y))_{i,j} = (\delta^+(X))_{i,j} + (\delta^+(Y))_{i,j} \quad \text{et} \quad (\delta^+(kX))_{i,j} = k(\delta^+(X))_{i,j}$$.
 
-Sachant que $(\delta^+(X))_{i,j} = (1-p)x_{i,j} + p \quad \frac{x_{i,j+1} + x_{i,j-1} + x_{i+1,j} + x_{i-1,j}}{4}$, le résultat est immédiat.
+Sachant que $(\delta^+(X))_{i,j} = (1-p)x_{i,j} + \frac{p}{4} \left(x_{i,j+1} + x_{i,j-1} + x_{i+1,j} + x_{i-1,j}\right)$, le résultat est immédiat.
+
+L'idée est que si on a une fonction linéaire, on peut la représenter par une matrice, mais celle-ci sera de taille $N^4$.
+
+Quelques éléments d'explications. Ici on identifie $\mathcal{M}_N(\mathbb{R})$ et $\mathbb{R}^{N^2}$ pour représenter la matrice $X$. \\
+
+$ \begin{pmatrix} a & b & c \\ d & e & f \\ g & h & i \end{pmatrix} \longrightarrow \left( \begin{array}{c} a \\ b \\ c \\ d \\ e \\ f \\ g \\ h \\ i \end{array} \right)$
+On peut alors voir la fonction $\delta^+$ sous forme matricielle, comme l'illustre la figure suivante. % TODO Ref !
+
+$\left( \begin{array}{c} x_1 \\ x_2 \end{array} \right] = \begin{bmatrix} A & B \\ C & D \end{bmatrix} \times \left[ \begin{array}{c} y_1 \\ y_2 \end{array} \right]$
+
 
 \subsection*{Question 10}
 
