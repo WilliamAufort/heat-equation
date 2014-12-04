@@ -31,8 +31,20 @@ int i_col,i_row;         // position of the processor in the grid
 
 /* Processors data */
 
-double* matrix, first_row, last_row, first_col, last_col;
-double* work_matrix, neighbor_first_row, neighbor_last_row, neighbor_first_col, neighbor_last_col;
+double* matrix;
+double* first_row; 
+double* last_row;
+double* first_col;
+double* last_col;
+double* work_matrix;
+double* work_first_row; 
+double* work_last_row;
+double* work_first_col;
+double* work_last_col;
+double* neighbor_first_row;
+double* neighbor_last_row;
+double* neighbor_first_col;
+double* neighbor_last_col;
 
 /* initialize data */
 
@@ -45,16 +57,16 @@ void init_datas()
 	work_matrix = malloc(sizeof(double)*(nb_col-2)*(nb_row-2));
 	first_row = malloc(sizeof(double)*nb_col);
 	last_row = malloc(sizeof(double)*nb_col);
-	first_col = malloc(sizeof(double)*(nb_row));
-	last_col = malloc(sizeof(double)*(nb_row));
+	first_col = malloc(sizeof(double)*nb_row);
+	last_col = malloc(sizeof(double)*nb_row);
 	neighbor_first_row = malloc(sizeof(double)*nb_col);
 	neighbor_last_row = malloc(sizeof(double)*nb_col);
-	neighbor_first_col = malloc(sizeof(double)*(nb_row));
-	neighbor_last_col = malloc(sizeof(double)*(nb_row));
+	neighbor_first_col = malloc(sizeof(double)*nb_row);
+	neighbor_last_col = malloc(sizeof(double)*nb_row);
 	work_first_row = malloc(sizeof(double)*nb_col);
 	work_last_row = malloc(sizeof(double)*nb_col);
-	work_first_col = malloc(sizeof(double)*(nb_row));
-	work_last_col = malloc(sizeof(double)*(nb_row));
+	work_first_col = malloc(sizeof(double)*nb_row);
+	work_last_col = malloc(sizeof(double)*nb_row);
 
 }
 
@@ -82,7 +94,7 @@ void free_datas()
 | Read the input data |
 \*********************/
 
-void set_arguments(int widht, int height, int p, int t, matrix_t *mat, /* file */ )
+void set_arguments(int widht, int height, int p, int t, double* mat /*, file */ )
 {
  /* Simple parser TODO */
 }
@@ -120,8 +132,8 @@ void compute_image(double p)
 	// usefull variables
 	int my_col = my_id % nb_col;
 	int my_row = my_id / nb_col;
-	int my_col_mid = my_col-2;
-	int my_row_mid = my_row-2;
+	int nb_col_mid = nb_col-2;
+	int nb_row_mid = nb_row-2;
 
 	// Scatter data
 
@@ -131,7 +143,7 @@ void compute_image(double p)
 	south=(my_row - 1 + nb_row) % nb_row;//ensure index >0
 	east=(my_col - 1 + nb_col) % nb_col;
 	west=(my_col + 1) % nb_col;
-	MPI_Send(first_row, nb_col, MPI_DOUBLE, norh, 1, MPI_VERTICAL);
+	MPI_Send(first_row, nb_col, MPI_DOUBLE, north, 1, MPI_VERTICAL);
 	MPI_Send(last_row, nb_col, MPI_DOUBLE, south, 1, MPI_VERTICAL);
 	MPI_Send(first_col, nb_row, MPI_DOUBLE, west, 1, MPI_HORIZONTAL);
 	MPI_Send(last_col, nb_row, MPI_DOUBLE, east, 1, MPI_HORIZONTAL);
@@ -139,9 +151,15 @@ void compute_image(double p)
     // Do the computations
 	int i, j;
 	//middle
-	for(i = 1; i < nb_col_mid-1, i++) {
-		for(j = 1; j < nb_row_mid-1, j++) {
-			work_matrix[i+nb_col*j]=average(matrix[i+nb_col*j],matrix[i+nb_col*(j-1)],matrix[i+nb_col*(j+1)],matrix[i+1+nb_col*j]+matrix[i-1+nb_col*j]);	
+	for(i = 1; i < nb_col_mid-1; i++) {
+		for(j = 1; j < nb_row_mid-1; j++) {
+			work_matrix[i+nb_col*j]=average(
+				matrix[i+nb_col*j],
+				matrix[i+nb_col*(j-1)],
+				matrix[i+nb_col*(j+1)],
+				matrix[i+1+nb_col*j],
+				matrix[i-1+nb_col*j],
+			p);	
         	}
 	}
 	work_matrix[0]=average(
@@ -149,29 +167,29 @@ void compute_image(double p)
 		first_row[1],
 		matrix[nb_col_mid],
 		matrix[1],
-		first_col[1]
-	);
+		first_col[1],
+	p);
 	work_matrix[nb_col_mid-1]=average(
 		matrix[nb_col_mid-1],
 		first_row[nb_col_mid],
 		matrix[nb_col_mid+nb_col_mid-1],
 		last_col[1],
-		matrix[nb_col_mid-2]
-	);
+		matrix[nb_col_mid-2],
+	p);
 	work_matrix[nb_col_mid*(nb_row_mid-1)]=average(
 		matrix[nb_col_mid*(nb_row_mid-1)],
 		matrix[nb_col_mid*(nb_row_mid-1)-nb_col_mid],
 		last_row[1],
 		matrix[nb_col*(nb_row_mid-1)+1],
-		first_col[nb_row_mid-2]
-	);
-	[nb_col_mid*nb_row_mid-1]=average(
+		first_col[nb_row_mid-2],
+	p);
+	work_matrix[nb_col_mid*nb_row_mid-1]=average(
 		matrix[nb_col_mid*nb_row_mid-1],
 		matrix[nb_col_mid*nb_row_mid-1-nb_col_mid],
 		last_row[nb_col_mid],
 		last_col[nb_row_mid],
-		matrix[nb_col_mid*nb_row_mid-2]
-	);
+		matrix[nb_col_mid*nb_row_mid-2],
+	p);
 
 	//lines
 	for(i=1;i < nb_col_mid-1;i++)
@@ -181,15 +199,15 @@ void compute_image(double p)
 			first_row[i+1],
 			matrix[i+nb_col_mid],
 			matrix[i+1],
-			matrix[i-1]
-		);
+			matrix[i-1],
+		p);
 		work_matrix[nb_col_mid*(nb_row_mid-1)+i]=average(
 			matrix[nb_col_mid*(nb_row_mid-1)+i],
 			matrix[nb_col_mid*(nb_row_mid-2)+i],
 			last_row[i+1],
 			matrix[nb_col_mid*(nb_row_mid-1)+i+1],
-			matrix[nb_col_mid*(nb_row_mid-1)+i-1]
-		);
+			matrix[nb_col_mid*(nb_row_mid-1)+i-1],
+		p);
 	}
 	//cols
 	for(j=1;i < nb_row_mid-1;j++)
@@ -199,15 +217,15 @@ void compute_image(double p)
 			matrix[nb_col_mid*(j-1)],
 			matrix[nb_col_mid*(j+1)],
 			matrix[nb_col_mid*j+1],
-			first_col[j+1]
-		);
+			first_col[j+1],
+		p);
 		work_matrix[nb_col_mid*(j+1)-1]=average(
 			matrix[nb_col_mid*(j+1)-1],
 			matrix[nb_col_mid*j-1],
 			matrix[nb_col_mid*(j+2)-1],
 			last_col[j+1],
-			matrix[nb_col_mid*(j+1)-2]
-		);
+			matrix[nb_col_mid*(j+1)-2],
+		p);
 	}
 
 
@@ -225,15 +243,15 @@ void compute_image(double p)
 			neighbor_first_row[i],
 			matrix[i-1],
 			first_row[i+1],
-			first_row[i-1]
-		);
+			first_row[i-1],
+		p);
 		work_last_row[i]=average(
 			last_row[i],
 			matrix[nb_col_mid*(nb_row_mid-1)+i-1],
 			neighbor_last_row[i],
 			last_row[i+1],
-			last_row[i-1]
-		);
+			last_row[i-1],
+		p);
 	}
 
 	for(j=1;j < nb_row-1;j++)
@@ -243,31 +261,31 @@ void compute_image(double p)
 			first_col[j+1],
 			first_col[j-1],
 			matrix[nb_col_mid*(j-1)],
-			neighbor_first_col[j]
-		);
+			neighbor_first_col[j],
+		p);
 		work_last_col[j]=average(
 			last_col[j],
 			last_col[j+1],
 			last_col[j-1],
-			neighbor_last_col[j]
+			neighbor_last_col[j],
 			matrix[nb_col_mid*j-1],
-		);
+		p);
 	}
 	//Corners
 	work_first_row[0]=average(first_row[0],
 		neighbor_first_row[0],
 		first_col[1],
 		first_row[1],
-		neighbor_first_col[0]
-	);
+		neighbor_first_col[0],
+	p);
 	work_first_col[0]=work_first_row[0];
 
 	work_first_row[nb_col-1]=average(first_row[nb_col-1],
 		neighbor_first_row[nb_col-1],
 		last_col[1],
 		neighbor_last_col[0],
-		first_row[nb_col-2]
-	);
+		first_row[nb_col-2],
+	p);
 	work_last_col[0]=work_first_row[nb_col-1];
 
 
@@ -275,16 +293,16 @@ void compute_image(double p)
 		first_col[nb_row-2],
 		neighbor_last_row[0],
 		last_row[1],
-		neighbor_first_col[nb_row-1]
-	);
+		neighbor_first_col[nb_row-1],
+	p);
 	work_last_row[0]=work_first_col[nb_col-1];
 
 	work_last_col[nb_row-1]=average(last_col[nb_row-1],
 		last_col[nb_row-2],
 		neighbor_last_row[nb_col-1],
 		neighbor_last_col[nb_row-1],
-		last_row[nb_col-2]
-	);
+		last_row[nb_col-2],
+	p);
 	work_last_row[nb_col-1]=work_last_col[nb_row-1];
 	
 	// Reconstruct the matrix (swaping)
@@ -309,7 +327,7 @@ int main(int argc, char* argv[])
   init_datas();
   // init_matrix(); TODO
 
-	compute_image();
+	compute_image(0.5);
 
 	free_datas();
 
