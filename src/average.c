@@ -402,11 +402,10 @@ int main(int argc, char* argv[])
 	init_communicators();
 
   	assert(width == height);//"Grid have to be a square"
-	printf("r %d, c %d",nb_row,nb_col);
 	assert(size==nb_row*nb_col*nb_proc);//"We considered the number of processors is a square"
-	if (my_id == 0) {
+//	if (my_id == 0) {
 		printf("%d %d %lf %d \n", width, height, p, t);
-	}
+//	}
 	int cas, i, j;
 	double value; 
 	int stop=0;
