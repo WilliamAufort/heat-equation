@@ -25,11 +25,11 @@
 \*************************************************/
 
 int my_id, nb_proc;      // the id of the processor, and the number of processors
-int nb_col,nb_row;       // number of rows (and columns) of the grid
-int size;				 // size of the grid (N where the grid has size NxN)
+int nb_col,nb_row;       // number of rows (and columns) of the subgrid handeld by the proc
+int size;				 // size of the grid (NxN where the grid has size NxN)
 MPI_Comm MPI_HORIZONTAL; // communicator for horizontal broadcast
 MPI_Comm MPI_VERTICAL;   // communicator for vertical broadcast
-int i_col,i_row;         // position of the processor in the grid
+int my_col,my_row;         // position of the processor in the grid
 
 
 /* Processors data */
@@ -55,6 +55,9 @@ void init_datas()
 {
 	nb_col = (int)sqrt(size / nb_proc); // assume nb_proc is a square and nb_proc divides NxN
 	nb_row = nb_col; // assert square grid
+	int number_proc = (int)sqrt(nb_proc);
+	my_col = my_id % number_proc;
+	my_row = my_id / number_proc;
 	
 	matrix = calloc((nb_col-2)*(nb_row-2), sizeof(double));
 	work_matrix = calloc((nb_col-2)*(nb_row-2),sizeof(double));
@@ -125,9 +128,6 @@ double average(double center, double north, double south, double east, double we
 void compute_image(double p) 
 {
 	// usefull variables
-	int number_proc = (int)sqrt(nb_proc);
-	int my_col = my_id % number_proc;
-	int my_row = my_id / number_proc;
 	int nb_col_mid = nb_col-2;
 	int nb_row_mid = nb_row-2;
 
@@ -315,9 +315,34 @@ void compute_image(double p)
 }
 
 //set data
-void sethead(unsigned int i,unsigned int j,double t)
+void sethead(int i,int j,double t)
 {
-	if
+	i-=my_col*nb_col;
+	j-=my_row*nb_row;
+
+	if((0<=i)&&(i<nb_col)
+	&& (0<=j)&&(j<nb_row))
+	{
+		//center
+		if((0<i)&&(i<nb_col-1)
+		&& (0<j)&&(j<nb_row-1))
+		{
+			matrix[i+nb_col*j]=t;
+		}
+		//border (no else for corners)
+		else 
+		{
+			if(j==0)
+				first_row[i]=t;
+			if(j==nb_row-1)
+				last_row[i]=t;
+			if(i==0)
+				first_col[j]=t;
+			if(i==nb_col-1)
+				last_col[j]=t;
+		}
+	}
+	
 }
 
 /*************\
@@ -356,7 +381,7 @@ int main(int argc, char* argv[])
 	while(stop && (EOF != fscanf(f,"%d %d %d %lf", &cas, &i, &j, &value))) {
 		switch (cas) { 
 		case 0: 
-			// update data of processors
+			sethead(i,j,value);
 			break;
 		case 1:
 			fprintf(stderr, "Error : we don't consider constants here \n");
