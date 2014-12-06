@@ -53,7 +53,7 @@ double* neighbor_last_col;
 
 void init_datas()
 {
-	nb_col = size / (int)sqrt(nb_proc); // assume nb_proc is a square and nb_proc divides NxN
+	nb_col = (int)sqrt(size / nb_proc); // assume nb_proc is a square and nb_proc divides NxN
 	nb_row = nb_col; // assert square grid
 	
 	matrix = calloc((nb_col-2)*(nb_row-2), sizeof(double));
@@ -314,6 +314,12 @@ void compute_image(double p)
 	swap(&work_last_col,&last_col);
 }
 
+//set data
+void sethead(unsigned int i,unsigned int j,double t)
+{
+	if
+}
+
 /*************\
 | The program |
 \*************/
@@ -329,19 +335,18 @@ int main(int argc, char* argv[])
 
 	int width, height, t;
 	double p;
-	printf("coucou");
 	//Read in file
 	assert(argc>=2);
 	FILE* f=fopen(argv[1],"r");
 	assert(f!=NULL);
 	fscanf(f,"%d %d %lf %d \n", &width, &height, &p, &t);
-	
+	size=width*height;
 	init_datas();
 	init_communicators();
 
   	assert(width == height);//"Grid have to be a square"
-	printf("r %d, c%d",nb_row,nb_col);
-	assert(nb_proc==nb_row*nb_col);//"We considered the number of processors is a square"
+	printf("r %d, c %d\n",nb_row,nb_col);
+	assert(size==nb_row*nb_col*nb_proc);//"We considered the number of processors is a square"
 	if (my_id == 0) {
 		printf("%d %d %lf %d \n", width, height, p, t);
 	}
@@ -370,8 +375,6 @@ int main(int argc, char* argv[])
 		
 
 /*
-	init_communicators();
-	init_datas();
 	// init_matrix(); TODO
 
 	compute_image(p);
@@ -380,7 +383,7 @@ int main(int argc, char* argv[])
 */
 	free_datas();
 	MPI_Finalize();	
-	printf("coucou");
+	printf("coucou\n");
 
 	return 0;
 }
