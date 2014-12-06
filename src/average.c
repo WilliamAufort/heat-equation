@@ -25,6 +25,7 @@
 
 int my_id, nb_proc;      // the id of the processor, and the number of processors
 int nb_col,nb_row;       // number of rows (and columns) of the grid
+int size;				 // size of the grid (N where the grid has size NxN)
 MPI_Comm MPI_HORIZONTAL; // communicator for horizontal broadcast
 MPI_Comm MPI_VERTICAL;   // communicator for vertical broadcast
 int i_col,i_row;         // position of the processor in the grid
@@ -50,7 +51,7 @@ double* neighbor_last_col;
 
 void init_datas()
 {
-	nb_col = (int)sqrt(nb_proc);
+	nb_col = size / (int)sqrt(nb_proc); // assume nb_proc is a square and nb_proc divides NxN
 	nb_row = nb_col; // assert square grid
 	
 	matrix = malloc(sizeof(double)*(nb_col-2)*(nb_row-2));
@@ -107,8 +108,9 @@ void set_arguments(int widht, int height, int p, int t, double* mat /*, file */ 
 
 void init_communicators()
 {
-  MPI_Comm_split(MPI_COMM_WORLD, my_id / nb_col, my_id % nb_col, &MPI_HORIZONTAL);
-  MPI_Comm_split(MPI_COMM_WORLD, my_id % nb_col, my_id / nb_col, &MPI_VERTICAL);
+	int p = (int)sqrt(nb_proc);
+	MPI_Comm_split(MPI_COMM_WORLD, my_id / p, my_id % p, &MPI_HORIZONTAL);
+	MPI_Comm_split(MPI_COMM_WORLD, my_id % p, my_id / p, &MPI_VERTICAL);
 }
 
 void swap(double** l1,double** l2)
@@ -130,8 +132,9 @@ double average(double center, double north, double south, double east, double we
 void compute_image(double p) 
 {
 	// usefull variables
-	int my_col = my_id % nb_col;
-	int my_row = my_id / nb_col;
+	int number_proc = (int)sqrt(nb_proc);
+	int my_col = my_id % number_proc;
+	int my_row = my_id / number_proc;
 	int nb_col_mid = nb_col-2;
 	int nb_row_mid = nb_row-2;
 
@@ -148,9 +151,10 @@ void compute_image(double p)
 	MPI_Send(first_col, nb_row, MPI_DOUBLE, west, 1, MPI_HORIZONTAL);
 	MPI_Send(last_col, nb_row, MPI_DOUBLE, east, 1, MPI_HORIZONTAL);
     
-    // Do the computations
+    /* Do the computations */
+
 	int i, j;
-	//middle
+	// middle values
 	for(i = 1; i < nb_col_mid-1; i++) {
 		for(j = 1; j < nb_row_mid-1; j++) {
 			work_matrix[i+nb_col*j]=average(
@@ -159,39 +163,40 @@ void compute_image(double p)
 				matrix[i+nb_col*(j+1)],
 				matrix[i+1+nb_col*j],
 				matrix[i-1+nb_col*j],
-			p);	
+				p);	
         	}
 	}
+	// Corners of work_matrix
 	work_matrix[0]=average(
 		matrix[0],
 		first_row[1],
 		matrix[nb_col_mid],
 		matrix[1],
 		first_col[1],
-	p);
+		p);
 	work_matrix[nb_col_mid-1]=average(
 		matrix[nb_col_mid-1],
 		first_row[nb_col_mid],
 		matrix[nb_col_mid+nb_col_mid-1],
 		last_col[1],
 		matrix[nb_col_mid-2],
-	p);
+		p);
 	work_matrix[nb_col_mid*(nb_row_mid-1)]=average(
 		matrix[nb_col_mid*(nb_row_mid-1)],
 		matrix[nb_col_mid*(nb_row_mid-1)-nb_col_mid],
 		last_row[1],
 		matrix[nb_col*(nb_row_mid-1)+1],
 		first_col[nb_row_mid-2],
-	p);
+		p);
 	work_matrix[nb_col_mid*nb_row_mid-1]=average(
 		matrix[nb_col_mid*nb_row_mid-1],
 		matrix[nb_col_mid*nb_row_mid-1-nb_col_mid],
 		last_row[nb_col_mid],
 		last_col[nb_row_mid],
 		matrix[nb_col_mid*nb_row_mid-2],
-	p);
+		p);
 
-	//lines
+	// first and last lines of work_matrix
 	for(i=1;i < nb_col_mid-1;i++)
 	{
 		work_matrix[i]=average(
@@ -200,16 +205,17 @@ void compute_image(double p)
 			matrix[i+nb_col_mid],
 			matrix[i+1],
 			matrix[i-1],
-		p);
+			p);
 		work_matrix[nb_col_mid*(nb_row_mid-1)+i]=average(
 			matrix[nb_col_mid*(nb_row_mid-1)+i],
 			matrix[nb_col_mid*(nb_row_mid-2)+i],
 			last_row[i+1],
 			matrix[nb_col_mid*(nb_row_mid-1)+i+1],
 			matrix[nb_col_mid*(nb_row_mid-1)+i-1],
-		p);
+			p);
 	}
-	//cols
+
+	//first and last columns of work_matrix
 	for(j=1;i < nb_row_mid-1;j++)
 	{
 		work_matrix[nb_col_mid*j]=average(
@@ -218,24 +224,25 @@ void compute_image(double p)
 			matrix[nb_col_mid*(j+1)],
 			matrix[nb_col_mid*j+1],
 			first_col[j+1],
-		p);
+			p);
 		work_matrix[nb_col_mid*(j+1)-1]=average(
 			matrix[nb_col_mid*(j+1)-1],
 			matrix[nb_col_mid*j-1],
 			matrix[nb_col_mid*(j+2)-1],
 			last_col[j+1],
 			matrix[nb_col_mid*(j+1)-2],
-		p);
+			p);
 	}
 
-
-	// Do the receives 
+	// Receive datas for neighbors process
 	MPI_Recv(neighbor_first_row, nb_col, MPI_DOUBLE, north, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
 	MPI_Recv(neighbor_last_row, nb_col, MPI_DOUBLE, south, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
 	MPI_Recv(neighbor_first_col, nb_row, MPI_DOUBLE, south, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
 	MPI_Recv(neighbor_last_col, nb_row, MPI_DOUBLE, north, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
 
-	// Do the lasts computations 
+	/* Do the lasts computations */
+
+	// first and last rows
 	for(i=1;i < nb_col-1;i++)
 	{
 		work_first_row[i]=average(
@@ -254,6 +261,7 @@ void compute_image(double p)
 		p);
 	}
 
+	// first and last columns
 	for(j=1;j < nb_row-1;j++)
 	{
 		work_first_col[j]=average(
@@ -271,7 +279,7 @@ void compute_image(double p)
 			matrix[nb_col_mid*j-1],
 		p);
 	}
-	//Corners
+	// The 4 last corners
 	work_first_row[0]=average(first_row[0],
 		neighbor_first_row[0],
 		first_col[1],
@@ -287,7 +295,6 @@ void compute_image(double p)
 		first_row[nb_col-2],
 	p);
 	work_last_col[0]=work_first_row[nb_col-1];
-
 
 	work_first_col[nb_col-1]=average(first_col[nb_col-1],
 		first_col[nb_row-2],
@@ -305,7 +312,8 @@ void compute_image(double p)
 	p);
 	work_last_row[nb_col-1]=work_last_col[nb_row-1];
 	
-	// Reconstruct the matrix (swaping)
+	/* Reconstruct the matrix (swaping) */
+
 	swap(&work_matrix,&matrix);
 	swap(&work_first_row,&first_row);
 	swap(&work_last_row,&last_row);
@@ -319,21 +327,21 @@ void compute_image(double p)
 
 int main(int argc, char* argv[])
 {
-  MPI_Init(&argc,&argv);
-  MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
-  MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
+	MPI_Init(&argc,&argv);
+	MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
+	MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
   
-  init_communicators();
-  init_datas();
-  // init_matrix(); TODO
+	init_communicators();
+	init_datas();
+	// init_matrix(); TODO
 
 	compute_image(0.5);
 
 	free_datas();
 
-  MPI_Finalize();
+	MPI_Finalize();	
 
-  return 0;
+	return 0;
 }
 
 
