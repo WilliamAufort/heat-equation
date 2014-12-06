@@ -10,5 +10,6 @@ average : src/average.c
 
 clean:
 	rm -f $(EXEC) *~
+	rm -f src/*~
 
 .PHONY: clean
