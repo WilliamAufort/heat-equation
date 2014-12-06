@@ -330,8 +330,11 @@ int main(int argc, char* argv[])
 	int width, height, t;
 	double p;
 	printf("coucou");
-	//Red on stdin
-	scanf("%d %d %lf %d \n", &width, &height, &p, &t);
+	//Read in file
+	assert(argc>=2);
+	FILE* f=fopen(f,argv[1]);
+	assert(f!=NULL);
+	fscanf(f,"%d %d %lf %d \n", &width, &height, &p, &t);
 	
 	init_communicators();
 	init_datas();
@@ -344,7 +347,7 @@ int main(int argc, char* argv[])
 	int cas, i, j;
 	int stop = 1;
 	double value;
-	while(stop && (EOF != scanf("%d %d %d %lf", &cas, &i, &j, &value))) {
+	while(stop && (EOF != fscanf(f,"%d %d %d %lf", &cas, &i, &j, &value))) {
 		switch (cas) { 
 		case 0: 
 			// update data of processors
