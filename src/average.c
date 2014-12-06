@@ -409,7 +409,7 @@ int main(int argc, char* argv[])
 	}
 	int cas, i, j;
 	double value; 
-	int stop=0;
+	int stop=1;
 	while(stop && (EOF != fscanf(f,"%d %d %d %lf", &cas, &i, &j, &value))) {
 		switch (cas) { 
 		case 0: 
@@ -421,7 +421,7 @@ int main(int argc, char* argv[])
 			exit(1);
 			break;
 		case 2: // keep request and stop
-			stop=1;
+			stop=0;
 			break;
 		default:
 			fprintf(stderr, "Error : incorrect option : %d \n", cas);
@@ -434,6 +434,7 @@ int main(int argc, char* argv[])
 		compute_image(p);
 	if(cas==2)
 	{
+		printheat(i,j);
 		while((EOF != fscanf(f,"%d %d %d %lf", &cas, &i, &j, &value))) {
 			switch (cas) { 
 			case 0: 
@@ -456,7 +457,6 @@ int main(int argc, char* argv[])
 
 	free_datas();
 	MPI_Finalize();	
-	printf("coucou\n");
 
 	return 0;
 }
