@@ -151,12 +151,12 @@ void compute_image(double p)
 	// middle values
 	for(i = 1; i < nb_col_mid-1; i++) {
 		for(j = 1; j < nb_row_mid-1; j++) {
-			work_matrix[i+nb_col*j]=average(
-				matrix[i+nb_col*j],
-				matrix[i+nb_col*(j-1)],
-				matrix[i+nb_col*(j+1)],
-				matrix[i+1+nb_col*j],
-				matrix[i-1+nb_col*j],
+			work_matrix[i+nb_col_mid*j]=average(
+				matrix[i+nb_col_mid*j],
+				matrix[i+nb_col_mid*(j-1)],
+				matrix[i+nb_col_mid*(j+1)],
+				matrix[i+1+nb_col_mid*j],
+				matrix[i-1+nb_col_mid*j],
 				p);	
         	}
 	}
@@ -189,7 +189,6 @@ void compute_image(double p)
 		last_col[nb_row_mid],
 		matrix[nb_col_mid*nb_row_mid-2],
 		p);
-
 	// first and last lines of work_matrix
 	for(i=1;i < nb_col_mid-1;i++)
 	{
