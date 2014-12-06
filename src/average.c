@@ -57,19 +57,19 @@ void init_datas()
 	nb_row = nb_col; // assert square grid
 	
 	matrix = calloc((nb_col-2)*(nb_row-2), sizeof(double));
-	work_matrix = malloc(sizeof(double)*(nb_col-2)*(nb_row-2));
+	work_matrix = calloc((nb_col-2)*(nb_row-2),sizeof(double));
 	first_row = calloc(nb_col, sizeof(double));
 	last_row = calloc(nb_col, sizeof(double));
 	first_col = calloc(nb_row, sizeof(double));
 	last_col = calloc(nb_row, sizeof(double));
-	neighbor_first_row = malloc(sizeof(double)*nb_col);
-	neighbor_last_row = malloc(sizeof(double)*nb_col);
-	neighbor_first_col = malloc(sizeof(double)*nb_row);
-	neighbor_last_col = malloc(sizeof(double)*nb_row);
-	work_first_row = malloc(sizeof(double)*nb_col);
-	work_last_row = malloc(sizeof(double)*nb_col);
-	work_first_col = malloc(sizeof(double)*nb_row);
-	work_last_col = malloc(sizeof(double)*nb_row);
+	neighbor_first_row = calloc(nb_col,sizeof(double));
+	neighbor_last_row = calloc(nb_col,sizeof(double));
+	neighbor_first_col = calloc(nb_row,sizeof(double));
+	neighbor_last_col = calloc(nb_row,sizeof(double));
+	work_first_row = calloc(nb_col,sizeof(double));
+	work_last_row = calloc(nb_col,sizeof(double));
+	work_first_col = calloc(nb_row,sizeof(double));
+	work_last_col = calloc(nb_row,sizeof(double));
 
 }
 
@@ -331,16 +331,18 @@ int main(int argc, char* argv[])
 
 	int width, height, t;
 	double p;
-	FILE* file = fopen(argv[1],"r");
-	fscanf(file, "%d %d %lf %d \n", &width, &height, &p, &t);
-  	assert(width = height);
+	printf("coucou");
+	//Red on stdin
+	scanf("%d %d %lf %d \n", &width, &height, &p, &t);
+  	assert(width == height);//"Grid have to be a square"
+	assert(nb_proc==nb_row*nb_col);//"We considered the number of processors is a square"
 	if (my_id == 0) {
 		printf("%d %d %lf %d \n", width, height, p, t);
 	}
 	int cas, i, j;
 	int stop = 1;
 	double value;
-	while(stop && (EOF != fscanf(file, "%d %d %d %lf", &cas, &i, &j, &value))) {
+	while(stop && (EOF != scanf("%d %d %d %lf", &cas, &i, &j, &value))) {
 		switch (cas) { 
 		case 0: 
 			// update data of processors
@@ -366,11 +368,13 @@ int main(int argc, char* argv[])
 	init_datas();
 	// init_matrix(); TODO
 
-	compute_image(0.5);
+	compute_image(p);
 
-	free_datas();
+	
 */
+	free_datas();
 	MPI_Finalize();	
+	printf("coucou");
 
 	return 0;
 }
