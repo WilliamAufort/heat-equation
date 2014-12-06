@@ -15,10 +15,9 @@
 \usetikzlibrary{patterns} % pour hachures les figures
 
 \usepackage[]{algorithm2e}
+% TODO : Other package for algorithms ?
 
 \title{Algorithmique et programmation parallèle : DM}
-
-\newcommand{\X}[1]{{X}^{ #1 }}
 
 \author{William \textsc{AUFORT} et Raphaël \textsc{Charrondière}}
 
@@ -34,19 +33,19 @@ On supposera comme à l'habitude que $p$ divise $N$.
 
 \subsection*{Question 1}
 
-Pour calculer $\X{t+1}$ à partir de $\X{t}$ il faut appliquer la fonction $\delta$ à tous les éléments de $\X{t}$, soit $N^2$ fois.
-Donc, pour calculer $\X{t}$ à partir de $\X{0}$, il faut répéter cette opération $t$ fois, ce qui donne $t N^2$ applications de la fonction $\delta$ nécessaires.
+Pour calculer $X^{t+1}$ à partir de $X^t$ il faut appliquer la fonction $\delta$ à tous les éléments de $X^t$, soit $N^2$ fois.
+Donc, pour calculer $X^t$ à partir de $X^0$, il faut répéter cette opération $t$ fois, ce qui donne $t N^2$ applications de la fonction $\delta$ nécessaires.
 
 \subsection*{Question 2}
 
 Nous donnons ici l'implémentation de l'automate cellulaire de la partie 3, et non pas l'implémentation de l'automate général (où les neuf voisins sont nécessaires pour la mise à jour). Nous expliquerons les différences après la description de l'algorithme. \\
 
-L'idée est de disposer les processus selon une grille. processus Chaque dispose d'un bloc de $\left( \frac{N}{p} \right) ^2$ éléments.\\
+L'idée est de disposer les processeurs selon une grille. Chaque processeur dispose d'un bloc de $\left( cac{N}{p} \right) ^2$ éléments.\\
 
-Considérons un processus $P$. Celui-ci dispose des données $(\widehat{x_{i,j}})$.
+Considérons un processeur $P$. Celui-ci dispose des données $(\widehat{x_{i,j}})$.
 Pour effectuer un calcul $\delta(\widehat{x_{i,j}})$, P a besoin en plus de $\widehat{x_{i-1,j}}$, $\widehat{x_{i+1,j}}$, $\widehat{x_{i,j-1}}$ et $\widehat{x_{i,j+1}}$.
 On peut calculer l'image des éléments de $P_i$ qui ne sont pas à la frontière (les éléments en rouge sur la figure \ref{datas}), $P_i$ n'a besoin que de valeurs qui lui sont connues.
-Les éléments à la frontière nécessitent quant à eux une ou deux valeurs dont disposent les processus voisins de $P_i$ sur la grille (les éléments en bleu sur la figure \ref{datas}) pour pouvoir être mis à jour.
+Les éléments à la frontière nécessitent quant à eux une ou deux valeurs dont disposent les processeurs voisins de $P_i$ sur la grille (les éléments en bleu sur la figure \ref{datas}) pour pouvoir être mis à jour.
 
 \begin{figure}[!h]
   \centering
@@ -62,18 +61,18 @@ Les éléments à la frontière nécessitent quant à eux une ou deux valeurs do
 	  \draw[very thick] (7,0) -- (7,8); \draw[very thick, dashed] (7,-1) -- (7,0); \draw[very thick, dashed] (7,8) -- (7,9);
 	  \draw[very thick] (0,7) -- (8,7); \draw[very thick, dashed] (-1,7) -- (0,7); \draw[very thick, dashed] (8,7) -- (9,7);
 	\end{tikzpicture}
-  \caption{Schéma des données d'un processeur. Les données en rouge peuvent être mises à jour par le processus, alors que les autres nécessitent les données en bleu des processus voisins.}
+  \caption{Schéma des données d'un processeur. Les données en rouge peuvent être mises à jour par le processeurs, alors que les autres nécessitent les données en bleu des processeurs voisins.}
   \label{datas}
 \end{figure}
 
-Chaque processus va donc recevoir deux lignes (provenant de ses voisins horizontaux) et deux colonnes (provenant de ses voisins verticaux).
-Chaque processus doit donc également envoyer les lignes (respectivement les colonnes) supérieures et inférieures dont ont besoin les processus voisins horizontaux (repectivement verticaux), qui correspondent exactement aux éléments de la frontière.
+Chaque processeurs va donc recevoir deux lignes (provenant de ses voisins horizontaux) et deux colonnes (provenant de ses voisins verticaux).
+Chaque processeurs doit donc également envoyer les lignes (respectivement les colonnes) supérieures et inférieures dont ont besoin les processeurs voisins horizontaux (repectivement verticaux), qui correspondent exactement aux éléments de la frontière.
 
 Il est intéressant de remarquer que ces envois et réceptions peuvent être fait en parallèle, mais également pendant les calculs pour les éléments qui ne sont pas sur la frontière.
 
 \paragraph{Cas général}
 
-Dans le cas général, il y a une petite subtilité. Pour pouvoir mettre à jour les quatres éléments aux "coins", il faut disposer également d'une donnée de chaque processus voisin selon la diagonale. Mais cette donnée ne peut pas être transmise directement, à cause de la topologie de grille. Par contre, cette valeur est contenue dans une colonne échangée à un processus voisin de $P$ lors de la première étape (voir figure \ref{datas2}), ce qui permet de demander directement la valeur aux processus voisins.
+Dans le cas général, il y a une petite subtilité. Pour pouvoir mettre à jour les quatres éléments aux "coins", il faut disposer également d'une donnée de chaque processeurs voisin selon la diagonale. Mais cette donnée ne peut pas être transmise directement, à cause de la topologie de grille. Par contre, cette valeur est contenue dans une colonne échangée à un processeurs voisin de $P$ lors de la première étape (voir figure \ref{datas2}), ce qui permet de demander directement la valeur aux processeurs voisins.
 
 \begin{figure}[!h]
   \centering
@@ -97,8 +96,6 @@ Dans le cas général, il y a une petite subtilité. Pour pouvoir mettre à jour
 \subsection*{Question 3}
 
 L'algorithme final est présenté ci-dessous :
-
-% TODO : Algorithme pour P_i
 
 \begin{algorithm}[H]
   \KwData{Une matrice $X$}
@@ -135,14 +132,13 @@ D'où une complexité temporelle finale : $T(N,p) = max \left( \left(\frac{N}{p}
 
 \subsubsection*{Adaptation sur une grille non torique}
 
-Si on conserve avec exactitude le principe de l'algorithme, le seul problème consistera pour les processus en bordure de grille, lors des send/receive.
-Concrètement, si on note cette fois $P_{i,j}$ les processeurs ($(i,j) \in \left\{ 0, \dots,p-1\right\}$), les processus $P_{0,i}$ ne peuvent pas envoyer leur ligne au processus $P_{p-1,i}$ (même chose de $P_{i,0}$ vers $P_{i,p-1}$).
-Une solution pourrait être de les faire passer à travers toute une ligne (respectivement toute une colonne), ce qui nécessiterai un temps $(p-1)(L + \frac{(n-2)b}{p})$ supplémentaire pour chaque envoi, soit un temps total de $4p(p-1)(L + \frac{(n-2)b}{p})$
-% TODO : Toutefois ces envois peuvent peut-être se faire en parallèle d'autres calculs... Il faudrait réfléchir à cela.
+Si on conserve avec exactitude le principe de l'algorithme, le seul problème consistera pour les processeurs en bordure de grille, lors des envois et des réceptions.
+Concrètement, si on note cette fois $P_{i,j}$ les processeurs ($(i,j) \in \left\{ 0, \dots,p-1\right\}$) selon leur place dans la grille, les processeurs $P_{0,i}$ ne peuvent pas envoyer leur ligne au processeur $P_{p-1,i}$ (même chose de $P_{i,0}$ vers $P_{i,p-1}$).
+Une solution pourrait être de les faire passer à travers toute une ligne (respectivement toute une colonne), ce qui nécessiterai un temps $(p-1)(L + \frac{(n-2)b}{p})$ supplémentaire pour chaque envoi, soit un temps total de $4p(p-1)(L + \frac{(n-2)b}{p})$. Toutefois ces envois peuvent se faire en parallèle d'autres calculs. % TODO : trouver un moyen de faire cela.
 
 \subsubsection*{Et sur une topologie en anneau ?}
 
-Sur une topologie en anneau la situation se complique... Si on numérote les processus de gauche à droite et de haut en bas, les transmissions verticales devront passer par exactement $p-1$ processus intermédiaires avant d'arriver à destination. Toutefois, on peut réutiliser la technique vue en cours pour le broadcast généralisé (où toutes les données transitent en même temps) pour les deux transmissions verticales que doit accomplir chaque processus.
+Sur une topologie en anneau la situation se complique... Les transmissions verticales devront passer par exactement $p-1$ processeurs intermédiaires avant d'arriver à destination. Toutefois, on peut réutiliser la technique vue en cours pour le broadcast généralisé (où toutes les données transitent en même temps) pour les deux transmissions verticales que doivent accomplir chaque processeurs.
 
 \section{Average automata}
 
@@ -157,18 +153,132 @@ $$(\delta^+(X+Y))_{i,j} = (\delta^+(X))_{i,j} + (\delta^+(Y))_{i,j} \quad \text{
 
 Sachant que $(\delta^+(X))_{i,j} = (1-p)x_{i,j} + \frac{p}{4} \left(x_{i,j+1} + x_{i,j-1} + x_{i+1,j} + x_{i-1,j}\right)$, le résultat est immédiat.
 
+\subsubsection*{Principe de l'algorithme}
+
 L'idée est que si on a une fonction linéaire, on peut la représenter par une matrice, mais celle-ci sera de taille $N^4$.
 
-Quelques éléments d'explications. Ici on identifie $\mathcal{M}_N(\mathbb{R})$ et $\mathbb{R}^{N^2}$ pour représenter la matrice $X$. \\
+Quelques éléments d'explications. Ici on identifie $\mathcal{M}_N(\mathbb{R})$ et $\mathbb{R}^{N^2}$ pour représenter la matrice $X$. La matrice $X$ sous forme de colonne sera notée $\tilde{X}$. \\
 
-$ \begin{pmatrix} a & b & c \\ d & e & f \\ g & h & i \end{pmatrix} \longrightarrow \left( \begin{array}{c} a \\ b \\ c \\ d \\ e \\ f \\ g \\ h \\ i \end{array} \right)$
-On peut alors voir la fonction $\delta^+$ sous forme matricielle, comme l'illustre la figure suivante. % TODO Ref !
+$$ X = \begin{pmatrix} a & b & c \\ d & e & f \\ g & h & i \end{pmatrix} \qquad \longrightarrow \qquad \tilde{X} = \left( \begin{array}{c} a \\ b \\ c \\ d \\ e \\ f \\ g \\ h \\ i \end{array} \right)$$
 
-$\left( \begin{array}{c} x_1 \\ x_2 \end{array} \right] = \begin{bmatrix} A & B \\ C & D \end{bmatrix} \times \left[ \begin{array}{c} y_1 \\ y_2 \end{array} \right]$
+On peut alors voir la fonction $\delta^+$ sous forme matricielle :
+ 
+$$ \Delta =  \begin{pmatrix} p & \frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} & 0 & 0 \\
+							\frac{1-p}{4} & p & \frac{1-p}{4} & 0 & \frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} & 0 \\
+							\frac{1-p}{4} & \frac{1-p}{4} & p & 0 & 0 & \frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} \\
+							\frac{1-p}{4} & 0 & 0 & p & \frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & 0 & 0 \\
+							0 & \frac{1-p}{4} & 0 & \frac{1-p}{4} & p & \frac{1-p}{4} & 0 & \frac{1-p}{4} & 0 \\
+							0 & 0 & \frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & p & 0 & 0 & \frac{1-p}{4} \\
+							\frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} & 0 & 0 & p & \frac{1-p}{4} & \frac{1-p}{4} \\
+							0 & \frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} & 0 & \frac{1-p}{4} & p & \frac{1-p}{4} \\
+							0 & 0 & \frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & p
+			\end{pmatrix}$$
 
+En effet : \\
+
+$$ \begin{pmatrix} p & \frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} & 0 & 0 \\
+							\frac{1-p}{4} & p & \frac{1-p}{4} & 0 & \frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} & 0 \\
+							\frac{1-p}{4} & \frac{1-p}{4} & p & 0 & 0 & \frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} \\
+							\frac{1-p}{4} & 0 & 0 & p & \frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & 0 & 0 \\
+							0 & \frac{1-p}{4} & 0 & \frac{1-p}{4} & p & \frac{1-p}{4} & 0 & \frac{1-p}{4} & 0 \\
+							0 & 0 & \frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & p & 0 & 0 & \frac{1-p}{4} \\
+							\frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} & 0 & 0 & p & \frac{1-p}{4} & \frac{1-p}{4} \\
+							0 & \frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} & 0 & \frac{1-p}{4} & p & \frac{1-p}{4} \\
+							0 & 0 & \frac{1-p}{4} & 0 & 0 & \frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & p
+	\end{pmatrix} \left( \begin{array}{c} a \\ b \\ c \\ d \\ e \\ f \\ g \\ h \\ i \end{array} \right) =  
+	\left( \begin{array}{c} \delta(a) \\ \delta(b) \\ \delta(c) \\ \delta(d) \\ \delta(e) \\ \delta(f) \\ \delta(g) \\ \delta(h) \\ \delta(i) \end{array} \right)  = \delta^+  \left[ \left( \begin{array}{c} a \\ b \\ c \\ d \\ e \\ f \\ g \\ h \\ i \end{array} \right) \right] $$
+
+Nous avons donc exhibé une matrice $\Delta$ telle que $\Delta \widetilde{X^t} = \widetilde{X^{t+1}}$. Calculer $X^t$ à partir de $X_0$ revient donc à calculer $\Delta^t \widetilde{X_0}$, ce qui peut se faire en temps $O(\text{log t})$ (avec $N$ fixé) par exponentiation rapide. De plus, pour calculer les produits de matrice (ceux utiisés pour $\Delta^t$ et le produit $\Delta^+ \times X^0$), on peut utiliser l'algorithme vu en cours pour le produit matrice/matrice sur une grille de processeurs.
+
+L'algorithme est donc le suivant : \\
+
+\begin{algorithm}[H]
+  \KwData{Une matrice $X^0$, un entier $t$}
+  \KwResult{La matrice $X^t$}
+  Calculer la matrice $\Delta$\;
+  Calculer $\Delta^t$ via exponentiation rapide\;
+  Calculer $\Delta^t \times X^0 = X^t$ \;
+  Retourner $X^t$.
+ \caption{L'algorithme de la question 5}
+\end{algorithm}
+
+\subsubsection*{Complexité en temps}
+
+Dans cette question, on pose $T_{prod}(N,p)$ le temps nécessaire pour calculer le produit de deux matrices de taille $N \times N$ sur une grille de $p \times p$ processeurs. On admet que l'on dispose d'un algorithme qui s'execute en temps $T_{prod}(N,p) = ... $ (un tel algorithme a été vu en cours). % TODO : Complexité à retrouver dans le cours
+
+Pour calculer la matrice $\Delta$, il suffit juste d'initialiser une matrice avec $N^4$ éléments (car $\Delta \in \mathcal{M}_{N^2}(\mathbb{R})$). Cette initiatisation peut se faire de manière automatique car on a : 
+
+$$ \Delta = 
+	\left(\begin{array}{c|c|c|c}
+    A_N & B_N & \dots & B_N  \\
+	\hline
+	B_N & A_N & \dots & B_N \\
+	\hline
+	\dots & \dots & \dots & B_N \\
+	\hline
+	B_N & \dots & \dots & A_N
+	\end{array} \right)$$
+
+$$ \text{Où :} \quad B_N = \frac{1-p}{4} \times I_N \quad \text{et} \quad A_N =
+	\begin{pmatrix} p & \frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} \\
+					\frac{1-p}{4} & p & \frac{1-p}{4} & \frac{1-p}{4} \\
+					\frac{1-p}{4} & \frac{1-p}{4} & p & \frac{1-p}{4} \\
+					\frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & p
+	 \end{pmatrix}  $$ \\
+
+% TODO : L'initialisation ne pose pas de problèmes, mais le broadcast de la matrice ( ainsi que des autres données ) peut prendre un certain temps, étant donné que le réseau est un réseau torique
+
+Pour l'exponentiation rapide, on sait qu'on effectue dans le pire des cas $O(\text{log t})$ produits de matrices, soit une complexité en $O(T_{prod}(N^2,p)\times \text{log t})$ pour le calcul de $\Delta^t$. \\ % TODO : Retrouver la complexité pire cas pour exponentiation rapide, et remplacer T_prod
+
+Enfin, le dernier produit matrice/vecteur se fait en temps $T_{prodVect} = $. \\ % TODO : retrouver la complexité
+
+D'où une complexité temporelle finale en ... % TODO : terminer le calcul
+
+\subsubsection*{Complexité en espace}
+
+Concernant la complexité temporelle, chaque processeur dispose d'un bloc de $\Delta$ de taille $\left(\frac{N^2}{p}\right)^2$, d'un bloc de $X^0$ de taille $\frac{N^2}{p}$, mais également d'un autre bloc de taille $\left(\frac{N^2}{p}\right)^2$ nécessaire au calcul de $\Delta^t$. Il ne faut pas non plus oublier que des blocs temporaires doivent être alloués pour les envois et réceptions de lignes et de colonnes durant les étapes où on effectue des multiplications. % TODO : Qu'est ce que celà représente comme mémoire ?
+
+\subsubsection*{Comparaison dans le cas général} 
+
+% TODO : Qu'est ce que ca veut dire ?? Comparer par rapport à la question 3 ?
+
+\subsection*{Question 6}
+
+Si le réseau de processeurs forme une clique, voyons ce qui peut être modifié dans le précédent algorithme. \\
+
+Concernant les envois de données, ceux-ci peuvent être effectués sans passer par tout le réseau, chaque envoi aura donc un coût identique. \\
+
+% TODO : Adapter algorithme produit de matrice quand le réseau forme une clique
+
+\subsection*{Question 7}
+
+\subsection*{Question 8}
+
+Voir le fichier \texttt{sparse.c}.
+
+\section{Réservoir thermique}
 
 \subsection*{Question 10}
 
+\subsection*{Question 11}
 
+Cette question est un peu ambigüe. L'additivité est clairement définie sur $\mathcal{M}_n(\mathbb{R})$, mais pas sur $\mathcal{M}_n(\mathbb{R} \cup \mathcal{C})$. En effet, il est difficile de définir le "type" (constant ou non) de la somme $x + \mathcal{C}(y)$. Si l'on considère que le résultat est une variable (cas 1), on perd le côté constant de $y$, alors que si on considère que le résultat est une constante (cas 2, le choix qui nous paraît le plus raisonnable), on perd le côté variable de $x$.
+
+Mais quelque soit la convention que l'on choisisse d'adopter, l'application $\delta^+$ n'est plus linéaire. En effet, considérons deux matrices $X$ et $Y$ telles que $X$ soit nulle sauf pour $x_{0,0} = x \neq 0$, et $Y$ soit nulle sauf pour $y_{0,0} = \mathcal{C}(y) \neq \mathcal{C}(0)$.
+On a clairement $\delta(x_{0,0}) = p \times x$ et $\delta(x_{0,0}) = y$.
+
+Par contre, $\delta(x_{0,0} + y_{0,0}) = p \times (x+y)$ dans le cas 1, $x+y$ dans le cas 2. Dans tous les cas, ces deux valeurs différent de $p \times x + y$ si on suppose en plus que $p$ est non nul. Ceci prouve que les matrices $\delta^+(X) + \delta^+(Y)$ et $\delta^+(X+Y)$ différent en leur élément $(0,0)$, ce qui montre bien que $\delta^+$ n'est plus linéaire dans le cas où on rajoute des constantes.
+
+\subsection*{Question 12}
+
+% TODO : pas une simple convergence de puissance de matrices, car on ne peut modéliser les valeurs constantes... N'y réfléchir que si tout est fait
+
+\subsection*{Question 13}
+
+Voir le fichier \texttt{constants.c}, très inspiré de \texttt{average.c}.
+
+\subsection*{Question 14}
+
+Voir les fichiers ... % TODO
 
 \end{document}
