@@ -134,11 +134,12 @@ void compute_image(double p)
 	// Scatter data
 
 	// Do the sends
+	int N=(int)sqrt(nb_proc);
 	int west,east,north,south;
-	north=(my_row + 1) % nb_row;
-	south=(my_row - 1 + nb_row) % nb_row;//ensure index >0
-	east=(my_col - 1 + nb_col) % nb_col;
-	west=(my_col + 1) % nb_col;
+	north=(my_row + 1) % N;
+	south=(my_row - 1 + nb_row) % N;//ensure index >0
+	east=(my_col - 1 + nb_col) % N;
+	west=(my_col + 1) % N;
 	MPI_Send(first_row, nb_col, MPI_DOUBLE, north, 1, MPI_VERTICAL);
 	MPI_Send(last_row, nb_col, MPI_DOUBLE, south, 1, MPI_VERTICAL);
 	MPI_Send(first_col, nb_row, MPI_DOUBLE, west, 1, MPI_HORIZONTAL);
