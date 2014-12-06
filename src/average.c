@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <mpi.h>
 #include <math.h>
+#include <assert.h>
 
 /*************************************************\
 | One processor works on several buffers :
@@ -29,6 +30,7 @@ int size;				 // size of the grid (N where the grid has size NxN)
 MPI_Comm MPI_HORIZONTAL; // communicator for horizontal broadcast
 MPI_Comm MPI_VERTICAL;   // communicator for vertical broadcast
 int i_col,i_row;         // position of the processor in the grid
+
 
 /* Processors data */
 
@@ -89,15 +91,6 @@ void free_datas()
 	free(neighbor_last_row);
 	free(neighbor_first_col);
 	free(neighbor_last_col);
-}
-
-/*********************\
-| Read the input data |
-\*********************/
-
-void set_arguments(int widht, int height, int p, int t, double* mat /*, file */ )
-{
- /* Simple parser TODO */
 }
 
 /***************************\
@@ -330,7 +323,19 @@ int main(int argc, char* argv[])
 	MPI_Init(&argc,&argv);
 	MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
-  
+
+	/* Read the input file */
+
+	int width, height, t;
+	double p;
+	FILE* file = fopen(argv[1],"r");
+	fscanf(file, "%d %d %lf %d \n", &width, &height, &p, &t);
+  	assert(width = height);
+	if (my_id == 0) {
+		printf("%d %d %lf %d \n", width, height, p, t);
+	}
+
+/*
 	init_communicators();
 	init_datas();
 	// init_matrix(); TODO
@@ -338,7 +343,7 @@ int main(int argc, char* argv[])
 	compute_image(0.5);
 
 	free_datas();
-
+*/
 	MPI_Finalize();	
 
 	return 0;
