@@ -56,12 +56,12 @@ void init_datas()
 	nb_col = size / (int)sqrt(nb_proc); // assume nb_proc is a square and nb_proc divides NxN
 	nb_row = nb_col; // assert square grid
 	
-	matrix = calloc(sizeof(double)*(nb_col-2)*(nb_row-2));
+	matrix = calloc((nb_col-2)*(nb_row-2), sizeof(double));
 	work_matrix = malloc(sizeof(double)*(nb_col-2)*(nb_row-2));
-	first_row = calloc(sizeof(double)*nb_col);
-	last_row = calloc(sizeof(double)*nb_col);
-	first_col = calloc(sizeof(double)*nb_row);
-	last_col = calloc(sizeof(double)*nb_row);
+	first_row = calloc(nb_col, sizeof(double));
+	last_row = calloc(nb_col, sizeof(double));
+	first_col = calloc(nb_row, sizeof(double));
+	last_col = calloc(nb_row, sizeof(double));
 	neighbor_first_row = malloc(sizeof(double)*nb_col);
 	neighbor_last_row = malloc(sizeof(double)*nb_col);
 	neighbor_first_col = malloc(sizeof(double)*nb_row);
@@ -340,7 +340,7 @@ int main(int argc, char* argv[])
 	int cas, i, j;
 	int stop = 1;
 	double value;
-	while(stop && (EOF != fscanf(file, "%d %d %d %lf", &cas, &i, &j, &value)) {
+	while(stop && (EOF != fscanf(file, "%d %d %d %lf", &cas, &i, &j, &value))) {
 		switch (cas) { 
 		case 0: 
 			// update data of processors
