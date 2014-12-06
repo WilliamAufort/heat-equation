@@ -379,6 +379,12 @@ void printheat(int i,int j)
 	
 }
 
+/* Divisibility test */
+
+int divides(int a, int b) {
+	return ((b / a) * a == b);
+}
+
 /*************\
 | The program |
 \*************/
@@ -405,8 +411,9 @@ int main(int argc, char* argv[])
 	init_datas();
 	init_communicators();
 
-  	assert(width == height);//"Grid have to be a square"
-	assert(size==nb_row*nb_col*nb_proc);//"We considered the number of processors is a square"
+  	assert(width == height); // The grid have to be a square grid
+	assert(size==nb_row*nb_col*nb_proc); // We consider that the number of processors is a square"
+	assert(divides(nb_proc,size)); 
 	if (my_id == 0) {
 		printf("%d %d %lf %d \n", width, height, p, t);
 	}
