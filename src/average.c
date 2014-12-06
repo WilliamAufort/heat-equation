@@ -144,7 +144,7 @@ void compute_image(double p)
 	MPI_Send(last_row, nb_col, MPI_DOUBLE, south, 1, MPI_VERTICAL);
 	MPI_Send(first_col, nb_row, MPI_DOUBLE, west, 1, MPI_HORIZONTAL);
 	MPI_Send(last_col, nb_row, MPI_DOUBLE, east, 1, MPI_HORIZONTAL);
-	if(my_col!=my_row) printf("debug %d %d %d %d\n",north,south,west,east);
+	//if(my_col!=my_row) printf("debug %d %d %d %d\n",north,south,west,east);
     
     /* Do the computations */
 
@@ -360,19 +360,19 @@ void printheat(int i,int j)
 		&& (0<j)&&(j<nb_row-1))
 		{
 			i--;
-			printf("%lf",matrix[i+(nb_col-2)*j]);
+			printf("%e",matrix[i+(nb_col-2)*j]);
 		}
 		//border
 		else 
 		{
 			if(j==0)
-				printf("%lf",first_row[i]);
+				printf("%e",first_row[i]);
 			else if(j==nb_row-1)
-				printf("%lf",last_row[i]);
+				printf("%e",last_row[i]);
 			else if(i==0)
-				printf("%lf",first_col[j]);
+				printf("%e",first_col[j]);
 			else if(i==nb_col-1)
-				printf("%lf",last_col[j]);
+				printf("%e",last_col[j]);
 		}
 		printf(".\n");
 	}
@@ -436,7 +436,7 @@ int main(int argc, char* argv[])
 	for(step=0;step<t;step++)
 	{
 		compute_image(p);
-		printf("(%d,%d) step %d\n",my_col,my_row,step);
+		//printf("(%d,%d) step %d\n",my_col,my_row,step);
 	}
 	if(cas==2)
 	{
