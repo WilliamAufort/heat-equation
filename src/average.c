@@ -179,7 +179,7 @@ void compute_image(double p)
 		matrix[nb_col_mid*(nb_row_mid-1)],
 		matrix[nb_col_mid*(nb_row_mid-1)-nb_col_mid],
 		last_row[1],
-		matrix[nb_col*(nb_row_mid-1)+1],
+		matrix[nb_col_mid*(nb_row_mid-1)+1],
 		first_col[nb_row_mid-2],
 		p);
 	work_matrix[nb_col_mid*nb_row_mid-1]=average(
@@ -327,7 +327,8 @@ void setheat(int i,int j,double t)
 		if((0<i)&&(i<nb_col-1)
 		&& (0<j)&&(j<nb_row-1))
 		{
-			matrix[i+nb_col*j]=t;
+			i--;
+			matrix[i+(nb_col-2)*j]=t;
 		}
 		//border (no else for corners)
 		else 
@@ -358,7 +359,8 @@ void printheat(int i,int j)
 		if((0<i)&&(i<nb_col-1)
 		&& (0<j)&&(j<nb_row-1))
 		{
-			printf("%lf",matrix[i+nb_col*j]);
+			i--;
+			printf("%lf",matrix[i+(nb_col-2)*j]);
 		}
 		//border
 		else 
