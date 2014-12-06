@@ -137,13 +137,14 @@ void compute_image(double p)
 	int N=(int)sqrt(nb_proc);
 	int west,east,north,south;
 	north=(my_row + 1) % N;
-	south=(my_row - 1 + nb_row) % N;//ensure index >0
-	east=(my_col - 1 + nb_col) % N;
+	south=(my_row - 1 + N) % N;//ensure index >0
+	east=(my_col - 1 + N) % N;
 	west=(my_col + 1) % N;
 	MPI_Send(first_row, nb_col, MPI_DOUBLE, north, 1, MPI_VERTICAL);
 	MPI_Send(last_row, nb_col, MPI_DOUBLE, south, 1, MPI_VERTICAL);
 	MPI_Send(first_col, nb_row, MPI_DOUBLE, west, 1, MPI_HORIZONTAL);
 	MPI_Send(last_col, nb_row, MPI_DOUBLE, east, 1, MPI_HORIZONTAL);
+	if(my_col!=my_row) printf("debug %d %d %d %d\n",north,south,west,east);
     
     /* Do the computations */
 
@@ -226,12 +227,11 @@ void compute_image(double p)
 			matrix[nb_col_mid*(j+1)-2],
 			p);
 	}
-
 	// Receive datas for neighbors process
 	MPI_Recv(neighbor_first_row, nb_col, MPI_DOUBLE, north, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
 	MPI_Recv(neighbor_last_row, nb_col, MPI_DOUBLE, south, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
-	MPI_Recv(neighbor_first_col, nb_row, MPI_DOUBLE, south, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
-	MPI_Recv(neighbor_last_col, nb_row, MPI_DOUBLE, north, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_first_col, nb_row, MPI_DOUBLE, west, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_last_col, nb_row, MPI_DOUBLE, east, 1, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
 
 	/* Do the lasts computations */
 
@@ -385,6 +385,8 @@ void printheat(int i,int j)
 
 int main(int argc, char* argv[])
 {
+	nb_proc=0;
+	my_id=-1;
 	MPI_Init(&argc,&argv);
 	MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
@@ -432,7 +434,10 @@ int main(int argc, char* argv[])
 	}
 	int step;
 	for(step=0;step<t;step++)
+	{
 		compute_image(p);
+		printf("(%d,%d) step %d\n",my_col,my_row,step);
+	}
 	if(cas==2)
 	{
 		printheat(i,j);
