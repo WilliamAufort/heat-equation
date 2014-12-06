@@ -324,8 +324,6 @@ int main(int argc, char* argv[])
 	MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
 
-	init_communicators();
-	init_datas();
 
 	/* Read the input file */
 
@@ -334,6 +332,10 @@ int main(int argc, char* argv[])
 	printf("coucou");
 	//Red on stdin
 	scanf("%d %d %lf %d \n", &width, &height, &p, &t);
+	
+	init_communicators();
+	init_datas();
+
   	assert(width == height);//"Grid have to be a square"
 	assert(nb_proc==nb_row*nb_col);//"We considered the number of processors is a square"
 	if (my_id == 0) {
