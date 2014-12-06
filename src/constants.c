@@ -35,6 +35,7 @@ struct list
 {
 	int i;
 	int j;
+	double t;
 	struct list* next;
 };
 
@@ -84,6 +85,16 @@ void init_datas()
 	work_first_col = calloc(nb_row,sizeof(double));
 	work_last_col = calloc(nb_row,sizeof(double));
 
+}
+
+void addsource(int i_,int j_,double t_)
+{
+	sourcelist* o=sources;
+	sources=malloc(sizeof(list));
+	sources->i=i_;
+	sources->j=j_;
+	sources->t=t_;
+	sources->next=o;
 }
 
 /* free data */
@@ -395,6 +406,16 @@ void printheat(int i,int j)
 	
 }
 
+void majsources()
+{
+	sourcelist* s=sources;
+	while(s!=NULL)
+	{
+		setheat(s->i,s->j,s->t);
+		s=s->next;
+	}
+}
+
 /*************\
 | The program |
 \*************/
@@ -435,9 +456,7 @@ int main(int argc, char* argv[])
 			setheat(i,j,value);
 			break;
 		case 1:
-			fprintf(stderr, "Error : we don't consider constants here \n");
-			free_datas();
-			exit(1);
+			addsource(i,j,value);
 			break;
 		case 2: // keep request and stop
 			stop=0;
@@ -451,6 +470,7 @@ int main(int argc, char* argv[])
 	int step;
 	for(step=0;step<t;step++)
 	{
+		majsources();
 		compute_image(p);
 		//printf("(%d,%d) step %d\n",my_col,my_row,step);
 	}
