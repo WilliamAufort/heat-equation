@@ -25,11 +25,11 @@
 \*************************************************/
 
 int my_id, nb_proc;      // the id of the processor, and the number of processors
-int nb_col,nb_row;       // number of rows (and columns) of the grid
-int size;				 // size of the grid (N where the grid has size NxN)
+int nb_col,nb_row;       // number of rows (and columns) of the subgrid handeld by the proc
+int size;				 // size of the grid (NxN where the grid has size NxN)
 MPI_Comm MPI_HORIZONTAL; // communicator for horizontal broadcast
 MPI_Comm MPI_VERTICAL;   // communicator for vertical broadcast
-int i_col,i_row;         // position of the processor in the grid
+int my_col,my_row;         // position of the processor in the grid
 
 
 /* Processors data */
@@ -53,23 +53,26 @@ double* neighbor_last_col;
 
 void init_datas()
 {
-	nb_col = size / (int)sqrt(nb_proc); // assume nb_proc is a square and nb_proc divides NxN
+	nb_col = (int)sqrt(size / nb_proc); // assume nb_proc is a square and nb_proc divides NxN
 	nb_row = nb_col; // assert square grid
+	int number_proc = (int)sqrt(nb_proc);
+	my_col = my_id % number_proc;
+	my_row = my_id / number_proc;
 	
 	matrix = calloc((nb_col-2)*(nb_row-2), sizeof(double));
-	work_matrix = malloc(sizeof(double)*(nb_col-2)*(nb_row-2));
+	work_matrix = calloc((nb_col-2)*(nb_row-2),sizeof(double));
 	first_row = calloc(nb_col, sizeof(double));
 	last_row = calloc(nb_col, sizeof(double));
 	first_col = calloc(nb_row, sizeof(double));
 	last_col = calloc(nb_row, sizeof(double));
-	neighbor_first_row = malloc(sizeof(double)*nb_col);
-	neighbor_last_row = malloc(sizeof(double)*nb_col);
-	neighbor_first_col = malloc(sizeof(double)*nb_row);
-	neighbor_last_col = malloc(sizeof(double)*nb_row);
-	work_first_row = malloc(sizeof(double)*nb_col);
-	work_last_row = malloc(sizeof(double)*nb_col);
-	work_first_col = malloc(sizeof(double)*nb_row);
-	work_last_col = malloc(sizeof(double)*nb_row);
+	neighbor_first_row = calloc(nb_col,sizeof(double));
+	neighbor_last_row = calloc(nb_col,sizeof(double));
+	neighbor_first_col = calloc(nb_row,sizeof(double));
+	neighbor_last_col = calloc(nb_row,sizeof(double));
+	work_first_row = calloc(nb_col,sizeof(double));
+	work_last_row = calloc(nb_col,sizeof(double));
+	work_first_col = calloc(nb_row,sizeof(double));
+	work_last_col = calloc(nb_row,sizeof(double));
 
 }
 
@@ -125,20 +128,18 @@ double average(double center, double north, double south, double east, double we
 void compute_image(double p) 
 {
 	// usefull variables
-	int number_proc = (int)sqrt(nb_proc);
-	int my_col = my_id % number_proc;
-	int my_row = my_id / number_proc;
 	int nb_col_mid = nb_col-2;
 	int nb_row_mid = nb_row-2;
 
 	// Scatter data
 
 	// Do the sends
+	int N=(int)sqrt(nb_proc);
 	int west,east,north,south;
-	north=(my_row + 1) % nb_row;
-	south=(my_row - 1 + nb_row) % nb_row;//ensure index >0
-	east=(my_col - 1 + nb_col) % nb_col;
-	west=(my_col + 1) % nb_col;
+	north=(my_row + 1) % N;
+	south=(my_row - 1 + nb_row) % N;//ensure index >0
+	east=(my_col - 1 + nb_col) % N;
+	west=(my_col + 1) % N;
 	MPI_Send(first_row, nb_col, MPI_DOUBLE, north, 1, MPI_VERTICAL);
 	MPI_Send(last_row, nb_col, MPI_DOUBLE, south, 1, MPI_VERTICAL);
 	MPI_Send(first_col, nb_row, MPI_DOUBLE, west, 1, MPI_HORIZONTAL);
@@ -314,6 +315,69 @@ void compute_image(double p)
 	swap(&work_last_col,&last_col);
 }
 
+//set data
+void setheat(int i,int j,double t)
+{
+	i-=my_col*nb_col;
+	j-=my_row*nb_row;
+
+	if((0<=i)&&(i<nb_col)
+	&& (0<=j)&&(j<nb_row))
+	{
+		//center
+		if((0<i)&&(i<nb_col-1)
+		&& (0<j)&&(j<nb_row-1))
+		{
+			matrix[i+nb_col*j]=t;
+		}
+		//border (no else for corners)
+		else 
+		{
+			if(j==0)
+				first_row[i]=t;
+			if(j==nb_row-1)
+				last_row[i]=t;
+			if(i==0)
+				first_col[j]=t;
+			if(i==nb_col-1)
+				last_col[j]=t;
+		}
+	}
+	
+}
+
+void printheat(int i,int j)
+{
+	i-=my_col*nb_col;
+	j-=my_row*nb_row;
+
+	if((0<=i)&&(i<nb_col)
+	&& (0<=j)&&(j<nb_row))
+	{
+		printf("temperature of case %i,%i is ",i+my_col*nb_col,j+my_row*nb_row);
+		//center
+		if((0<i)&&(i<nb_col-1)
+		&& (0<j)&&(j<nb_row-1))
+		{
+			printf("%lf",matrix[i+nb_col*j]);
+		}
+		//border
+		else 
+		{
+			if(j==0)
+				printf("%lf",first_row[i]);
+			else if(j==nb_row-1)
+				printf("%lf",last_row[i]);
+			else if(i==0)
+				printf("%lf",first_col[j]);
+			else if(i==nb_col-1)
+				printf("%lf",last_col[j]);
+		}
+		printf(".\n");
+	}
+	
+}
+
 /*************\
 | The program |
 \*************/
@@ -324,26 +388,32 @@ int main(int argc, char* argv[])
 	MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
 
-	init_communicators();
-	init_datas();
 
 	/* Read the input file */
 
 	int width, height, t;
 	double p;
-	FILE* file = fopen(argv[1],"r");
-	fscanf(file, "%d %d %lf %d \n", &width, &height, &p, &t);
-  	assert(width = height);
+	//Read in file
+	assert(argc>=2);
+	FILE* f=fopen(argv[1],"r");
+	assert(f!=NULL);
+	fscanf(f,"%d %d %lf %d \n", &width, &height, &p, &t);
+	size=width*height;
+	init_datas();
+	init_communicators();
+
+  	assert(width == height);//"Grid have to be a square"
+	assert(size==nb_row*nb_col*nb_proc);//"We considered the number of processors is a square"
 	if (my_id == 0) {
 		printf("%d %d %lf %d \n", width, height, p, t);
 	}
 	int cas, i, j;
-	int stop = 1;
-	double value;
-	while(stop && (EOF != fscanf(file, "%d %d %d %lf", &cas, &i, &j, &value))) {
+	double value; 
+	int stop=0;
+	while(stop && (EOF != fscanf(f,"%d %d %d %lf", &cas, &i, &j, &value))) {
 		switch (cas) { 
 		case 0: 
-			// update data of processors
+			setheat(i,j,value);
 			break;
 		case 1:
 			fprintf(stderr, "Error : we don't consider constants here \n");
@@ -351,7 +421,7 @@ int main(int argc, char* argv[])
 			exit(1);
 			break;
 		case 2: // keep request and stop
-			stop = 0;
+			stop=1;
 			break;
 		default:
 			fprintf(stderr, "Error : incorrect option : %d \n", cas);
@@ -359,18 +429,34 @@ int main(int argc, char* argv[])
 			break;
 		}
 	}
-		
-
-/*
-	init_communicators();
-	init_datas();
-	// init_matrix(); TODO
-
-	compute_image(0.5);
+	int step;
+	for(step=0;step<t;step++)
+		compute_image(p);
+	if(cas==2)
+	{
+		while((EOF != fscanf(f,"%d %d %d %lf", &cas, &i, &j, &value))) {
+			switch (cas) { 
+			case 0: 
+			
+				break;
+			case 1:
+			
+				break;
+			case 2: 
+				printheat(i,j);
+				break;
+			default:
+				fprintf(stderr, "Error : incorrect option : %d \n", cas);
+				free_datas();
+				break;
+			}
+		}
+	}
+	fclose(f);
 
 	free_datas();
-*/
 	MPI_Finalize();	
+	printf("coucou\n");
 
 	return 0;
 }
