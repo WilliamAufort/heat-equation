@@ -315,7 +315,7 @@ void compute_image(double p)
 }
 
 //set data
-void sethead(int i,int j,double t)
+void setheat(int i,int j,double t)
 {
 	i-=my_col*nb_col;
 	j-=my_row*nb_row;
@@ -341,6 +341,38 @@ void sethead(int i,int j,double t)
 			if(i==nb_col-1)
 				last_col[j]=t;
 		}
+	}
+	
+}
+
+void printheat(int i,int j)
+{
+	i-=my_col*nb_col;
+	j-=my_row*nb_row;
+
+	if((0<=i)&&(i<nb_col)
+	&& (0<=j)&&(j<nb_row))
+	{
+		printf("temperature of case %i,%i is ",i+my_col*nb_col,j+my_row*nb_row);
+		//center
+		if((0<i)&&(i<nb_col-1)
+		&& (0<j)&&(j<nb_row-1))
+		{
+			printf("%lf",matrix[i+nb_col*j]);
+		}
+		//border
+		else 
+		{
+			if(j==0)
+				printf("%lf",first_row[i]);
+			else if(j==nb_row-1)
+				printf("%lf",last_row[i]);
+			else if(i==0)
+				printf("%lf",first_col[j]);
+			else if(i==nb_col-1)
+				printf("%lf",last_col[j]);
+		}
+		printf(".\n");
 	}
 	
 }
@@ -376,12 +408,12 @@ int main(int argc, char* argv[])
 		printf("%d %d %lf %d \n", width, height, p, t);
 	}
 	int cas, i, j;
-	int stop = 1;
-	double value;
+	double value; 
+	int stop=0;
 	while(stop && (EOF != fscanf(f,"%d %d %d %lf", &cas, &i, &j, &value))) {
 		switch (cas) { 
 		case 0: 
-			sethead(i,j,value);
+			setheat(i,j,value);
 			break;
 		case 1:
 			fprintf(stderr, "Error : we don't consider constants here \n");
@@ -389,7 +421,7 @@ int main(int argc, char* argv[])
 			exit(1);
 			break;
 		case 2: // keep request and stop
-			stop = 0;
+			stop=1;
 			break;
 		default:
 			fprintf(stderr, "Error : incorrect option : %d \n", cas);
@@ -397,15 +429,31 @@ int main(int argc, char* argv[])
 			break;
 		}
 	}
-		
+	int step;
+	for(step=0;step<t;step++)
+		compute_image(p);
+	if(cas==2)
+	{
+		while((EOF != fscanf(f,"%d %d %d %lf", &cas, &i, &j, &value))) {
+			switch (cas) { 
+			case 0: 
+			
+				break;
+			case 1:
+			
+				break;
+			case 2: 
+				printheat(i,j);
+				break;
+			default:
+				fprintf(stderr, "Error : incorrect option : %d \n", cas);
+				free_datas();
+				break;
+			}
+		}
+	}
+	fclose(f);
 
-/*
-	// init_matrix(); TODO
-
-	compute_image(p);
-
-	
-*/
 	free_datas();
 	MPI_Finalize();	
 	printf("coucou\n");
