@@ -56,12 +56,12 @@ void init_datas()
 	nb_col = size / (int)sqrt(nb_proc); // assume nb_proc is a square and nb_proc divides NxN
 	nb_row = nb_col; // assert square grid
 	
-	matrix = malloc(sizeof(double)*(nb_col-2)*(nb_row-2));
+	matrix = calloc(sizeof(double)*(nb_col-2)*(nb_row-2));
 	work_matrix = malloc(sizeof(double)*(nb_col-2)*(nb_row-2));
-	first_row = malloc(sizeof(double)*nb_col);
-	last_row = malloc(sizeof(double)*nb_col);
-	first_col = malloc(sizeof(double)*nb_row);
-	last_col = malloc(sizeof(double)*nb_row);
+	first_row = calloc(sizeof(double)*nb_col);
+	last_row = calloc(sizeof(double)*nb_col);
+	first_col = calloc(sizeof(double)*nb_row);
+	last_col = calloc(sizeof(double)*nb_row);
 	neighbor_first_row = malloc(sizeof(double)*nb_col);
 	neighbor_last_row = malloc(sizeof(double)*nb_col);
 	neighbor_first_col = malloc(sizeof(double)*nb_row);
@@ -244,14 +244,14 @@ void compute_image(double p)
 			matrix[i-1],
 			first_row[i+1],
 			first_row[i-1],
-		p);
+			p);
 		work_last_row[i]=average(
 			last_row[i],
 			matrix[nb_col_mid*(nb_row_mid-1)+i-1],
 			neighbor_last_row[i],
 			last_row[i+1],
 			last_row[i-1],
-		p);
+			p);
 	}
 
 	// first and last columns
@@ -263,14 +263,14 @@ void compute_image(double p)
 			first_col[j-1],
 			matrix[nb_col_mid*(j-1)],
 			neighbor_first_col[j],
-		p);
+			p);
 		work_last_col[j]=average(
 			last_col[j],
 			last_col[j+1],
 			last_col[j-1],
 			neighbor_last_col[j],
 			matrix[nb_col_mid*j-1],
-		p);
+			p);
 	}
 	// The 4 last corners
 	work_first_row[0]=average(first_row[0],
@@ -278,7 +278,7 @@ void compute_image(double p)
 		first_col[1],
 		first_row[1],
 		neighbor_first_col[0],
-	p);
+		p);
 	work_first_col[0]=work_first_row[0];
 
 	work_first_row[nb_col-1]=average(first_row[nb_col-1],
@@ -286,7 +286,7 @@ void compute_image(double p)
 		last_col[1],
 		neighbor_last_col[0],
 		first_row[nb_col-2],
-	p);
+		p);
 	work_last_col[0]=work_first_row[nb_col-1];
 
 	work_first_col[nb_col-1]=average(first_col[nb_col-1],
@@ -294,7 +294,7 @@ void compute_image(double p)
 		neighbor_last_row[0],
 		last_row[1],
 		neighbor_first_col[nb_row-1],
-	p);
+		p);
 	work_last_row[0]=work_first_col[nb_col-1];
 
 	work_last_col[nb_row-1]=average(last_col[nb_row-1],
@@ -302,7 +302,7 @@ void compute_image(double p)
 		neighbor_last_row[nb_col-1],
 		neighbor_last_col[nb_row-1],
 		last_row[nb_col-2],
-	p);
+		p);
 	work_last_row[nb_col-1]=work_last_col[nb_row-1];
 	
 	/* Reconstruct the matrix (swaping) */
@@ -324,6 +324,9 @@ int main(int argc, char* argv[])
 	MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
 
+	init_communicators();
+	init_datas();
+
 	/* Read the input file */
 
 	int width, height, t;
@@ -334,6 +337,29 @@ int main(int argc, char* argv[])
 	if (my_id == 0) {
 		printf("%d %d %lf %d \n", width, height, p, t);
 	}
+	int cas, i, j;
+	int stop = 1;
+	double value;
+	while(stop && (EOF != fscanf(file, "%d %d %d %lf", &cas, &i, &j, &value)) {
+		switch (cas) { 
+		case 0: 
+			// update data of processors
+			break;
+		case 1:
+			fprintf(stderr, "Error : we don't consider constants here \n");
+			free_datas();
+			exit(1);
+			break;
+		case 2: // keep request and stop
+			stop = 0;
+			break;
+		default:
+			fprintf(stderr, "Error : incorrect option : %d \n", cas);
+			free_datas();
+			break;
+		}
+	}
+		
 
 /*
 	init_communicators();
