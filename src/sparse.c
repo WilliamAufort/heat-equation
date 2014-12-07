@@ -460,9 +460,8 @@ void rotatesetheatapply(int bloci,int blocj,int initiali,int initialj,double t,d
 	int i,j;
 	int border=(int)sqrt(size);
 	for(i=0;i<nb_col;i++)
-		for(j=0;i<nb_row;j++)
+		for(j=0;j<nb_row;j++)
 			addheat((bloci*nb_col-initiali+i+border)%border,(blocj*nb_row-initialj+j+border)%border,t*getlocalheat(i,j,m,fr,lr,fc,lc));
-	
 }
 
 void printheat(int i,int j)
@@ -632,6 +631,7 @@ void senddata()
 
 void bsenddata(int proc)
 {
+	int N=(int)sqrt(nb_proc);
 	MPI_Bcast(work_first_row, nb_col, MPI_DOUBLE, proc, MPI_COMM_WORLD);
 	MPI_Bcast(work_last_row, nb_col, MPI_DOUBLE, proc, MPI_COMM_WORLD);
 	MPI_Bcast(work_first_col, nb_row, MPI_DOUBLE, proc, MPI_COMM_WORLD);
