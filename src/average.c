@@ -137,10 +137,10 @@ void compute_image(double p)
 	// Do the sends
 	int N=(int)sqrt(nb_proc);
 	int west,east,north,south;
-	north=(my_row + 1) % N;
-	south=(my_row - 1 + N) % N;
-	east=(my_col - 1 + N) % N;
-	west=(my_col + 1) % N;
+	south=(my_row + 1) % N;
+	north=(my_row - 1 + N) % N;
+	west=(my_col - 1 + N) % N;
+	east=(my_col + 1) % N;
 	MPI_Send(first_row, nb_col, MPI_DOUBLE, north, 1, MPI_VERTICAL);
 	MPI_Send(last_row, nb_col, MPI_DOUBLE, south, 2, MPI_VERTICAL);
 	MPI_Send(first_col, nb_row, MPI_DOUBLE, west, 3, MPI_HORIZONTAL);
@@ -228,10 +228,10 @@ void compute_image(double p)
 			p);
 	}
 	// Receive datas for neighbors process
-	MPI_Recv(neighbor_first_row, nb_col, MPI_DOUBLE, north, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
-	MPI_Recv(neighbor_last_row, nb_col, MPI_DOUBLE, south, 2, MPI_VERTICAL, MPI_STATUS_IGNORE);
-	MPI_Recv(neighbor_first_col, nb_row, MPI_DOUBLE, west, 3, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
-	MPI_Recv(neighbor_last_col, nb_row, MPI_DOUBLE, east, 4, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_last_row, nb_col, MPI_DOUBLE, north, 2, MPI_VERTICAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_first_row, nb_col, MPI_DOUBLE, south, 1, MPI_VERTICAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_last_col, nb_row, MPI_DOUBLE, west, 4, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
+	MPI_Recv(neighbor_first_col, nb_row, MPI_DOUBLE, east, 3, MPI_HORIZONTAL, MPI_STATUS_IGNORE);
 
 	/* Do the lasts computations */
 
