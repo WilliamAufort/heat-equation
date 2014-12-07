@@ -15,7 +15,6 @@
 \usetikzlibrary{patterns} % pour hachures les figures
 
 \usepackage[]{algorithm2e}
-% TODO : Other package for algorithms ?
 
 \title{Algorithmique et programmation parallèle : DM}
 
@@ -226,8 +225,6 @@ $$ \text{Où :} \quad B_N = \frac{1-p}{4} \times I_N \quad \text{et} \quad A_N =
 					\frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & p
 	 \end{pmatrix}  $$ \\
 
-% TODO : L'initialisation ne pose pas de problèmes, mais le broadcast de la matrice ( ainsi que des autres données ) peut prendre un certain temps, étant donné que le réseau est un réseau torique
-
 Pour l'exponentiation rapide, on sait qu'on effectue dans le pire des cas $O(\text{log t})$ produits de matrices, soit une complexité en $O(T_{prod}(N^2,p)\times \text{log t})$ pour le calcul de $\Delta^t$. \\ % TODO : Retrouver la complexité pire cas pour exponentiation rapide, et remplacer T_prod
 
 Enfin, le dernier produit matrice/vecteur se fait en temps $T_{prodVect} = $. \\ % TODO : retrouver la complexité
@@ -236,21 +233,39 @@ D'où une complexité temporelle finale en ... % TODO : terminer le calcul
 
 \subsubsection*{Complexité en espace}
 
-Concernant la complexité temporelle, chaque processeur dispose d'un bloc de $\Delta$ de taille $\left(\frac{N^2}{p}\right)^2$, d'un bloc de $X^0$ de taille $\frac{N^2}{p}$, mais également d'un autre bloc de taille $\left(\frac{N^2}{p}\right)^2$ nécessaire au calcul de $\Delta^t$. Il ne faut pas non plus oublier que des blocs temporaires doivent être alloués pour les envois et réceptions de lignes et de colonnes durant les étapes où on effectue des multiplications. % TODO : Qu'est ce que celà représente comme mémoire ?
+Concernant la complexité en espace, chaque processeur dispose d'un bloc de $\Delta$ de taille $\left(\frac{N^2}{p}\right)^2$, d'un bloc de $X^0$ de taille $\frac{N^2}{p}$, mais également d'un autre bloc de taille $\left(\frac{N^2}{p}\right)^2$ nécessaire au calcul de $\Delta^t$. Il ne faut pas non plus oublier que des blocs temporaires doivent être alloués pour les envois et réceptions de lignes et de colonnes durant les étapes où on effectue des multiplications. % TODO : Cours pour voir ce que celà représente comme mémoire
 
 \subsubsection*{Comparaison dans le cas général} 
 
-% TODO : Qu'est ce que ca veut dire ?? Comparer par rapport à la question 3 ?
+% TODO : Comparer les complexités une fois calculées
 
 \subsection*{Question 6}
 
-Si le réseau de processeurs forme une clique, voyons ce qui peut être modifié dans le précédent algorithme. \\
+Si le réseau de processeurs forme une clique, l'algorithme précédent change uniquement dans les communications à effectuer. \\
 
-Concernant les envois de données, ceux-ci peuvent être effectués sans passer par tout le réseau, chaque envoi aura donc un coût identique. \\
+Concernant les envois de données, ceux-ci peuvent être effectués sans passer par tout le réseau, chaque envoi aura donc un coût identique de ... \\ % TODO
 
-% TODO : Adapter algorithme produit de matrice quand le réseau forme une clique
+Le calcul de $\Delta$ reste inchangé, sachant qu'il ne nécessite aucune communication entre processeurs. \\
+
+Pour calculer $\Delta^t$, on peut envoyer directement les blocs de matrices de la source à la destination. Sachant que pour calculer un bloc de taille ${\left( \frac{N}{p} \right)}^2$ il faut $2p$ blocs, le coût de cette opération est de $2p \times \left( L + {\left( \frac{N}{p} \right)}^2 \right) b$. \\
+
+Enfin, la même idée pour calculer le dernier produit matrice/vecteur... % TODO argumenter 
 
 \subsection*{Question 7}
+
+L'idée est d'utiliser la matrice $Z^t$ afin d'éviter le calcul direct de $X^t$. On peut écrire $X^0$ sous la forme : 
+
+$$ X^0 = \sum_{\underset{x^0_{i,j} \neq 0}{(i,j)}} x^0_{i,j}E_{i,j} $$
+
+où $E_{i,j}$ est la matrice dont tous les coefficients sont nuls, excepté le coefficient en $(i,j)$ qui vaut 1. On remarquera que $Z = E_{0,0}$.
+
+Comme $\delta^+$ est linéaire, on a :
+
+$$ X^t = \sum_{\underset{x^0_{i,j} \neq 0}{(i,j)}} x^0_{i,j}E_{i,j}^t $$
+
+Cherchons maintenant comment calculer $E_{i,j}^t$. Vu que l'on travaille sur une grille torique, il est clair que $E_{i,j}^t$ et $Z^t$ sont égales à une permutation près. Cette permutation constitue juste en un décalage des indices de la matrice. 
+% TODO : Finir cette partie, avec le code de sparse.
+
 
 \subsection*{Question 8}
 
@@ -279,6 +294,6 @@ Voir le fichier \texttt{constants.c}, très inspiré de \texttt{average.c}.
 
 \subsection*{Question 14}
 
-Voir les fichiers ... % TODO
+Voir les fichiers \texttt{gfx.h} et \texttt{gfx.c}.
 
 \end{document}
