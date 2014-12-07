@@ -558,8 +558,8 @@ void receiveandshow()
 		c = i % N;
 		r = i / N;
 		drawbloc(work_matrix,c,r);
-//		drawfirstcol(work_first_col,c,r);
-//		drawlastcol(work_last_col,c,r);
+		drawfirstcol(work_first_col,c,r);
+		drawlastcol(work_last_col,c,r);
 		drawfirstrow(work_first_row,c,r);
 		drawlastrow(work_last_row,c,r);
 	}		
