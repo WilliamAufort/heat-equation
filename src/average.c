@@ -328,6 +328,7 @@ void setheat(int i,int j,double t)
 		&& (0<j)&&(j<nb_row-1))
 		{
 			i--;
+			j--;
 			matrix[i+(nb_col-2)*j]=t;
 		}
 		//border (no else for corners)
@@ -360,6 +361,7 @@ void printheat(int i,int j)
 		&& (0<j)&&(j<nb_row-1))
 		{
 			i--;
+			j--;
 			printf("%e",matrix[i+(nb_col-2)*j]);
 		}
 		//border
