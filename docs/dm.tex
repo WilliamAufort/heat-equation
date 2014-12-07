@@ -225,11 +225,13 @@ $$ \text{Où :} \quad B_N = \frac{1-p}{4} \times I_N \quad \text{et} \quad A_N =
 					\frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & p
 	 \end{pmatrix}  $$ \\
 
-Pour l'exponentiation rapide, on sait qu'on effectue dans le pire des cas $\Theta(\text{log t})$ produits de matrices, soit une complexité en $\Theta(T_{prod}(N^2,p)\times \text{log t}) = \Theta \left( max \left( pL + N^4 b, \frac{N^6}{p} \right) \times \text{log t} \right) $ pour le calcul de $\Delta^t$. \\
+Pour l'exponentiation rapide, on sait qu'on effectue dans le pire des cas $\Theta(\text{log t})$ produits de matrices, soit une complexité en $\Theta(T_{prod}(N^2,p)\times \text{log t}) = \Theta \left( max \left( pL + N^4 b, \frac{N^6}{p} \omega \right) \times \text{log t} \right) $ pour le calcul de $\Delta^t$. \\
 
-Enfin, le dernier produit matrice/vecteur se fait en temps $T_{prodVect} = max \left( pL + N^2 b, \frac{N^4}{p} \omega \right) $ (vu en cours).
+Enfin, le dernier produit matrice/vecteur se fait en temps $T_{prodVect} = max \left( pL + N^2 b, \frac{N^4}{p} \omega \right) $ (vu en cours, en utilisant $\sqrt{p}$ processeurs).
 
-D'où une complexité temporelle finale de l'ordre de : $max \left( pL + N^4 b, \frac{N^6}{p} \right) \times \text{log t} + max \left( pL + N^2 b, \frac{N^4}{p} \omega \right)$.
+D'où une complexité temporelle finale de l'ordre de : $max \left( pL + N^4 b, \frac{N^6}{p} \omega \right) \times \text{log t} + max \left( pL + N^2 b, \frac{N^4}{p} \omega \right)$.
+
+Remarque : le deuxième terme de la somme est ici négligeable.
 
 \subsubsection*{Complexité en espace}
 
@@ -237,19 +239,19 @@ Concernant la complexité en espace, chaque processeur dispose d'un bloc de $\De
 
 \subsubsection*{Comparaison dans le cas général} 
 
-% TODO : Comparer les complexités une fois calculées
+Si on regarde les complexités temporelles, 
 
 \subsection*{Question 6}
 
-Si le réseau de processeurs forme une clique, l'algorithme précédent change uniquement dans les communications à effectuer. \\
+Si le réseau de processeurs forme une clique, l'algorithme précédent change uniquement dans la manière dont les communications sont effectuées. \\
 
-Concernant les envois de données, ceux-ci peuvent être effectués sans passer par tout le réseau, chaque envoi aura donc un coût identique de ... \\ % TODO
+Concernant les envois de données, ceux-ci peuvent être effectués sans passer par tout le réseau, chaque envoi aura donc un coût identique de $L + \frac{N^2}{p} b$. \\
 
 Le calcul de $\Delta$ reste inchangé, sachant qu'il ne nécessite aucune communication entre processeurs. \\
 
 Pour calculer $\Delta^t$, on peut envoyer directement les blocs de matrices de la source à la destination. Sachant que pour calculer un bloc de taille ${\left( \frac{N}{p} \right)}^2$ il faut $2p$ blocs, le coût de cette opération est de $2p \times \left( L + {\left( \frac{N}{p} \right)}^2 \right) b$. \\
 
-Enfin, la même idée pour calculer le dernier produit matrice/vecteur... % TODO argumenter 
+Enfin, on utilise la même idée pour calculer le dernier produit matrice/vecteur, 
 
 \subsection*{Question 7}
 
