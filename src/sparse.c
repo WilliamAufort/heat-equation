@@ -760,7 +760,6 @@ int main(int argc, char* argv[])
 			bsenddata(z);
 		else
 			receiveandwork(z);
-	printf(" %d coucou %d\n",my_id,z);
 	}
 	if(cas==2)
 	{
