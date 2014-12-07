@@ -240,7 +240,7 @@ void compute_image(double p)
 	{
 		work_first_row[i]=average(
 			first_row[i],
-			neighbor_first_row[i],
+			neighbor_last_row[i],
 			matrix[i-1],
 			first_row[i+1],
 			first_row[i-1],
@@ -248,7 +248,7 @@ void compute_image(double p)
 		work_last_row[i]=average(
 			last_row[i],
 			matrix[nb_col_mid*(nb_row_mid-1)+i-1],
-			neighbor_last_row[i],
+			neighbor_first_row[i],
 			last_row[i+1],
 			last_row[i-1],
 			p);
@@ -262,45 +262,45 @@ void compute_image(double p)
 			first_col[j+1],
 			first_col[j-1],
 			matrix[nb_col_mid*(j-1)],
-			neighbor_first_col[j],
+			neighbor_last_col[j],
 			p);
 		work_last_col[j]=average(
 			last_col[j],
 			last_col[j+1],
 			last_col[j-1],
-			neighbor_last_col[j],
+			neighbor_first_col[j],
 			matrix[nb_col_mid*j-1],
 			p);
 	}
 	// The 4 last corners
 	work_first_row[0]=average(first_row[0],
-		neighbor_first_row[0],
+		neighbor_last_row[0],
 		first_col[1],
 		first_row[1],
-		neighbor_first_col[0],
+		neighbor_last_col[0],
 		p);
 	work_first_col[0]=work_first_row[0];
 
 	work_first_row[nb_col-1]=average(first_row[nb_col-1],
-		neighbor_first_row[nb_col-1],
+		neighbor_last_row[nb_col-1],
 		last_col[1],
-		neighbor_last_col[0],
+		neighbor_first_col[0],
 		first_row[nb_col-2],
 		p);
 	work_last_col[0]=work_first_row[nb_col-1];
 
 	work_first_col[nb_col-1]=average(first_col[nb_col-1],
 		first_col[nb_row-2],
-		neighbor_last_row[0],
+		neighbor_first_row[0],
 		last_row[1],
-		neighbor_first_col[nb_row-1],
+		neighbor_last_col[nb_row-1],
 		p);
 	work_last_row[0]=work_first_col[nb_col-1];
 
 	work_last_col[nb_row-1]=average(last_col[nb_row-1],
 		last_col[nb_row-2],
-		neighbor_last_row[nb_col-1],
-		neighbor_last_col[nb_row-1],
+		neighbor_first_row[nb_col-1],
+		neighbor_first_col[nb_row-1],
 		last_row[nb_col-2],
 		p);
 	work_last_row[nb_col-1]=work_last_col[nb_row-1];
