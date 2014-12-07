@@ -1,7 +1,7 @@
 CC = mpicc
 CFLAGS = -Wall
 
-EXEC = average constants
+EXEC = average constants sparse
 
 all: $(EXEC)
 
@@ -13,6 +13,9 @@ constants : src/gfx.c  src/constants.c
 
 gfx : src/gfx.c src/example.c
 	gcc $(CFLAGS) $^ -o $@ -lm -lX11
+
+sparse : src/gfx.c  src/sparse.c
+	$(CC) $(CFLAGS) $^ -o $@ -lm -lX11
 
 clean:
 	rm -f $(EXEC) *~
