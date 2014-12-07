@@ -41,7 +41,11 @@ Nous donnons ici d'abord l'implémentation de l'automate cellulaire de la partie
 
 L'idée est de disposer les processeurs selon une grille. Chaque processeur dispose d'un bloc de $\left( cac{N}{p} \right) ^2$ éléments.\\
 
-Considérons un processeur $P$. Celui-ci dispose des données $(\widehat{x_{i,j}})=(x_{l,m})_{ki\leq l<(k+1)i,cj\leq m<(c+1)j}$, c'est a dire d'un morceau de la grille de taille $k$x$c$.
+Considérons un processeur $P$. Celui-ci dispose des données :
+$$(\widehat{x_{i,j}})= \left\{ x_{l,m} \diagup ki\leq l<(k+1)i,cj\leq m<(c+1)j \right\}$$
+
+c'est a dire d'un morceau de la grille de taille $k \times c$.
+
 Pour effectuer un calcul $\delta(\widehat{x_{i,j}})$, P a besoin en plus de $\widehat{x_{i-1,j}}$, $\widehat{x_{i+1,j}}$, $\widehat{x_{i,j-1}}$ et $\widehat{x_{i,j+1}}$.
 On peut calculer l'image des éléments de $P_i$ qui ne sont pas à la frontière (les éléments en rouge sur la figure \ref{datas}), $P_i$ n'a besoin que de valeurs qui lui sont connues.
 Les éléments à la frontière nécessitent quant à eux une ou deux valeurs dont disposent les processeurs voisins de $P_i$ sur la grille (les éléments en bleu sur la figure \ref{datas}) pour pouvoir être mis à jour.
