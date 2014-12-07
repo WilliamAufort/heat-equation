@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 
 	//showing
 	char cmd[1024];
-	sprintf(cmd,"mpirun -np %d constants input.txt",nbp*nbp);
+	sprintf(cmd,"mpirun -np %d constants input.txt",nbp*nbp); // replace "constants" by another executable if you want (cf Readme). 
 	printf("Now launching \n");
 	printf(cmd);
 	printf("\n");

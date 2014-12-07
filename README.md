@@ -1,16 +1,33 @@
-heat-equation
-=============
+Distributing the Heat Equation
+==============================
 
-Using parallel algorithms (MPI) and cellular automatas to the problem of heat equation
+Nous présentons ici un programme qui simule l'équation de la chaleur, à base d'automates cellulaires.
 
 Compilation
 ===========
 
-Start "make" in the root directory creates several executables, which can be used with
+Lancer "make" dans la racine.
+Différents exécutables apparaissent :
+
+starter
+=======
+
+Cet exécutable lance le programme constants avec un nombre de processus dépendant de la taille de la grille donnée en entrée.
+
+Pour lancer ce programme, taper dans un terminal :
+
+./starter < mon_fichier
+
+(Le lecteur pourra aisément modifier le programme lancé en se rendant dans le fichier starter.c)
+
+Autres executables
+==================
+
+Les autres executables doivent être lancés en utilisant mpirun :
 
 mpirun -nb nb_procs ./executable file
 
-Where :
-- "nb_procs" is the number of processors used
-- "executable" is the name of the executable (ex : average)
-- "file" is the file where the program has to read the data
+Où :
+- "nb_procs" est le nombre de processeurs utilisés;
+- "executable" est le nom de l'executable (ex : average);
+- "file" est le nom du fichier d'entrée.
