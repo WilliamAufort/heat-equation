@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+#include <assert.h>
 
 int main(int argc, char* argv[])
 {
@@ -24,7 +26,8 @@ int main(int argc, char* argv[])
 	fclose(f);
 
 	//showing
-
-	system("mpirun -np %d constant input.txt",nbp);
+	char cmd[1024];
+	sprintf(cmd,"mpirun -np %d constant input.txt",nbp);
+	system(cmd);
 	return 0;
 }
