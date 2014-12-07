@@ -161,28 +161,28 @@ void compute_image(double p)
         	}
 	}
 	// Corners of work_matrix
-	work_matrix[0]=average(
+	work_matrix[0]=average( // ok
 		matrix[0],
 		first_row[1],
 		matrix[nb_col_mid],
 		matrix[1],
 		first_col[1],
 		p);
-	work_matrix[nb_col_mid-1]=average(
+	work_matrix[nb_col_mid-1]=average( // ok
 		matrix[nb_col_mid-1],
 		first_row[nb_col_mid],
 		matrix[nb_col_mid+nb_col_mid-1],
 		last_col[1],
 		matrix[nb_col_mid-2],
 		p);
-	work_matrix[nb_col_mid*(nb_row_mid-1)]=average(
+	work_matrix[nb_col_mid*(nb_row_mid-1)]=average( // ok
 		matrix[nb_col_mid*(nb_row_mid-1)],
 		matrix[nb_col_mid*(nb_row_mid-1)-nb_col_mid],
 		last_row[1],
 		matrix[nb_col_mid*(nb_row_mid-1)+1],
-		first_col[nb_row_mid-2],
+		first_col[nb_row-2],
 		p);
-	work_matrix[nb_col_mid*nb_row_mid-1]=average(
+	work_matrix[nb_col_mid*nb_row_mid-1]=average( // ok
 		matrix[nb_col_mid*nb_row_mid-1],
 		matrix[nb_col_mid*nb_row_mid-1-nb_col_mid],
 		last_row[nb_col_mid],
