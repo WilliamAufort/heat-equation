@@ -1,15 +1,24 @@
 CC = mpicc
 CFLAGS = -Wall
 
-EXEC = average
+EXEC = average constants sparse starter
 
 all: $(EXEC)
 
-average : src/average.c
-	$(CC) $(CFLAGS) $^ -o $@ -lm
+average : src/gfx.c src/average.c
+	$(CC) $(CFLAGS) $^ -o $@ -lm -lX11
 
-constants : src/constants.c
-	$(CC) $(CFLAGS) $^ -o $@ -lm
+starter : src/starter.c
+	$(CC) $(CFLAGS) $^ -o $@
+
+constants : src/gfx.c  src/constants.c
+	$(CC) $(CFLAGS) $^ -o $@ -lm -lX11
+
+gfx : src/gfx.c src/example.c
+	gcc $(CFLAGS) $^ -o $@ -lm -lX11
+
+sparse : src/gfx.c  src/sparse.c
+	$(CC) $(CFLAGS) $^ -o $@ -lm -lX11
 
 clean:
 	rm -f $(EXEC) *~
