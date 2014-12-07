@@ -203,7 +203,7 @@ L'algorithme est donc le suivant : \\
 
 \subsubsection*{Complexité en temps}
 
-Dans cette question, on pose $T_{prod}(N,p)$ le temps nécessaire pour calculer le produit de deux matrices de taille $N \times N$ sur une grille de $p \times p$ processeurs. On admet que l'on dispose d'un algorithme qui s'execute en temps $T_{prod}(N,p) = ... $ (un tel algorithme a été vu en cours). % TODO : Complexité à retrouver dans le cours
+Dans cette question, on pose $T_{prod}(N,p)$ le temps nécessaire pour calculer le produit de deux matrices de taille $N \times N$ sur une grille de $p \times p$ processeurs. On admet que l'on dispose d'un algorithme qui s'execute en temps $T_{prod}(N,p) = max \left( pL + N^2 b, \frac{N^3}{p} \omega \right) $ (un tel algorithme a été vu en cours). % TODO : Complexité à retrouver dans le cours
 
 Pour calculer la matrice $\Delta$, il suffit juste d'initialiser une matrice avec $N^4$ éléments (car $\Delta \in \mathcal{M}_{N^2}(\mathbb{R})$). Cette initiatisation peut se faire de manière automatique car on a : 
 
@@ -225,7 +225,7 @@ $$ \text{Où :} \quad B_N = \frac{1-p}{4} \times I_N \quad \text{et} \quad A_N =
 					\frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & p
 	 \end{pmatrix}  $$ \\
 
-Pour l'exponentiation rapide, on sait qu'on effectue dans le pire des cas $O(\text{log t})$ produits de matrices, soit une complexité en $O(T_{prod}(N^2,p)\times \text{log t})$ pour le calcul de $\Delta^t$. \\ % TODO : Retrouver la complexité pire cas pour exponentiation rapide, et remplacer T_prod
+Pour l'exponentiation rapide, on sait qu'on effectue dans le pire des cas $\Theta(\text{log t})$ produits de matrices, soit une complexité en $\Theta(T_{prod}(N^2,p)\times \text{log t}) = \Theta \left( max \left( pL + N^4 b, \frac{N^6}{p} \right) \times \text{log t} \right) $ pour le calcul de $\Delta^t$. \\ % TODO : Retrouver la complexité pire cas pouwr exponentiation rapide, et remplacer T_prod
 
 Enfin, le dernier produit matrice/vecteur se fait en temps $T_{prodVect} = $. \\ % TODO : retrouver la complexité
 
