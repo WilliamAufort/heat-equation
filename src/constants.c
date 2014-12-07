@@ -507,7 +507,8 @@ void drawfirstrow(double* data,int bloci,int blocj)
 void drawlastrow(double* data,int bloci,int blocj)
 {
 	bloci*=nb_col;
-	blocj*=(nb_row+1);
+	blocj++;
+	blocj*=nb_row;
 	blocj--;
 	int i;
 	for(i=0;i<nb_col;i++)
@@ -525,7 +526,8 @@ void drawfirstcol(double* data,int bloci,int blocj)
 
 void drawlastcol(double* data,int bloci,int blocj)
 {
-	bloci*=(nb_col+1);
+	bloci++;
+	bloci*=nb_col;
 	blocj*=nb_row;
 	bloci--;
 	int i;
@@ -544,16 +546,18 @@ void senddata()
 
 void receiveandshow()
 {
+	MPI_Status status;
 	int c,r,i;
+	int N=(int)sqrt(nb_proc);
 	for(i=0;i<nb_proc;i++)
 	{
-		MPI_Send(work_first_row, nb_col, MPI_DOUBLE, i, 5, MPI_COMM_WORLD);
-		MPI_Send(work_last_row, nb_col, MPI_DOUBLE, i, 6, MPI_COMM_WORLD);
-		MPI_Send(work_first_col, nb_row, MPI_DOUBLE, i, 7, MPI_COMM_WORLD);
-		MPI_Send(work_last_col, nb_row, MPI_DOUBLE, i, 8, MPI_COMM_WORLD);
-		MPI_Send(work_matrix, (nb_row-2)*(nb_col-2), MPI_DOUBLE, i, 9, MPI_COMM_WORLD);
-		c = i % nb_proc;
-		r = i / nb_proc;
+		MPI_Recv(work_first_row, nb_col, MPI_DOUBLE, i, 5, MPI_COMM_WORLD,&status);
+		MPI_Recv(work_last_row, nb_col, MPI_DOUBLE, i, 6, MPI_COMM_WORLD,&status);
+		MPI_Recv(work_first_col, nb_row, MPI_DOUBLE, i, 7, MPI_COMM_WORLD,&status);
+		MPI_Recv(work_last_col, nb_row, MPI_DOUBLE, i, 8, MPI_COMM_WORLD,&status);
+		MPI_Recv(work_matrix, (nb_row-2)*(nb_col-2), MPI_DOUBLE, i, 9, MPI_COMM_WORLD,&status);
+		c = i % N;
+		r = i / N;
 		drawbloc(work_matrix,c,r);
 		drawfirstcol(work_first_col,c,r);
 		drawlastcol(work_last_col,c,r);
