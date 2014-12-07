@@ -9,7 +9,7 @@ average : src/gfx.c src/average.c
 	$(CC) $(CFLAGS) $^ -o $@ -lm -lX11
 
 starter : src/starter.c
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ -lm
 
 constants : src/gfx.c  src/constants.c
 	$(CC) $(CFLAGS) $^ -o $@ -lm -lX11
