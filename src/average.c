@@ -180,7 +180,7 @@ void compute_image(double p)
 		matrix[nb_col_mid*(nb_row_mid-1)-nb_col_mid],
 		last_row[1],
 		matrix[nb_col_mid*(nb_row_mid-1)+1],
-		first_col[nb_row-2],
+		first_col[nb_row_mid],
 		p);
 	work_matrix[nb_col_mid*nb_row_mid-1]=average( // ok
 		matrix[nb_col_mid*nb_row_mid-1],
