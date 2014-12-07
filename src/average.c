@@ -132,7 +132,6 @@ void compute_image(double p)
 	int nb_row_mid = nb_row-2;
 
 	// Scatter data
-	printf("ncols %d,%d",nb_col,nb_row);
 	// Do the sends
 	int N=(int)sqrt(nb_proc);
 	int west,east,north,south;
