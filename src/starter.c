@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 
 	//showing
 	char cmd[1024];
-	sprintf(cmd,"mpirun -np %d constants input.txt",nbp);
+	sprintf(cmd,"mpirun -np %d constants input.txt",nbp*nbp);
 	system(cmd);
 	return 0;
 }
