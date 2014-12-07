@@ -159,7 +159,6 @@ void compute_image(double p)
 	int nb_row_mid = nb_row-2;
 
 	// Scatter data
-	printf("ncols %d,%d",nb_col,nb_row);
 	// Do the sends
 	int N=(int)sqrt(nb_proc);
 	int west,east,north,south;
@@ -481,7 +480,7 @@ void waveLengthToRGB(double Wavelength){
 
 void setcolor(double x,int i,int j)
 {
-	waveLengthToRGB(380+x*(781-380));
+	waveLengthToRGB(380+(1-x)*(781-380));
 	gfx_point(i,j);
 }
 

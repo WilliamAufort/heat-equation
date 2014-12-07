@@ -449,7 +449,7 @@ void waveLengthToRGB(double Wavelength){
 
 void setcolor(double x,int i,int j)
 {
-	waveLengthToRGB(380+x*(781-380));
+	waveLengthToRGB(380+(1-x)*(781-380));
 	gfx_point(i,j);
 }
 
