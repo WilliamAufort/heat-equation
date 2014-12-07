@@ -12,7 +12,7 @@ Différents exécutables apparaissent :
 starter
 =======
 
-Cet exécutable lance le programme average avec un nombre de processus dépendant de la taille de la grille donnée en entrée.
+Cet exécutable lance le programme constants avec un nombre de processus dépendant de la taille de la grille donnée en entrée.
 
 Pour lancer ce programme, taper dans un terminal :
 
