@@ -494,8 +494,8 @@ void drawfirstcol(double* data,int bloci,int blocj)
 
 void drawlastcol(double* data,int bloci,int blocj)
 {
-	bloci*=nb_col;
 	bloci++;
+	bloci*=nb_col;
 	blocj*=nb_row;
 	bloci--;
 	int i;
