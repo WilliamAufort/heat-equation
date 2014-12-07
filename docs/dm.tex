@@ -37,11 +37,15 @@ Donc, pour calculer $X^t$ à partir de $X^0$, il faut répéter cette opération
 
 \subsection*{Question 2}
 
-Nous donnons ici l'implémentation de l'automate cellulaire de la partie 3, et non pas l'implémentation de l'automate général (où les neuf voisins sont nécessaires pour la mise à jour). Nous expliquerons les différences après la description de l'algorithme. \\
+Nous donnons ici d'abord l'implémentation de l'automate cellulaire de la partie 3, et non pas l'implémentation de l'automate général (où les neuf voisins sont nécessaires pour la mise à jour). Nous expliquerons les différences après la description de l'algorithme. \\
 
 L'idée est de disposer les processeurs selon une grille. Chaque processeur dispose d'un bloc de $\left( cac{N}{p} \right) ^2$ éléments.\\
 
-Considérons un processeur $P$. Celui-ci dispose des données $(\widehat{x_{i,j}})$.
+Considérons un processeur $P$. Celui-ci dispose des données :
+$$(\widehat{x_{i,j}})= \left\{ x_{l,m} \diagup ki\leq l<(k+1)i,cj\leq m<(c+1)j \right\}$$
+
+c'est a dire d'un morceau de la grille de taille $k \times c$.
+
 Pour effectuer un calcul $\delta(\widehat{x_{i,j}})$, P a besoin en plus de $\widehat{x_{i-1,j}}$, $\widehat{x_{i+1,j}}$, $\widehat{x_{i,j-1}}$ et $\widehat{x_{i,j+1}}$.
 On peut calculer l'image des éléments de $P_i$ qui ne sont pas à la frontière (les éléments en rouge sur la figure \ref{datas}), $P_i$ n'a besoin que de valeurs qui lui sont connues.
 Les éléments à la frontière nécessitent quant à eux une ou deux valeurs dont disposent les processeurs voisins de $P_i$ sur la grille (les éléments en bleu sur la figure \ref{datas}) pour pouvoir être mis à jour.
@@ -71,7 +75,7 @@ Il est intéressant de remarquer que ces envois et réceptions peuvent être fai
 
 \paragraph{Cas général}
 
-Dans le cas général, il y a une petite subtilité. Pour pouvoir mettre à jour les quatres éléments aux "coins", il faut disposer également d'une donnée de chaque processeurs voisin selon la diagonale. Mais cette donnée ne peut pas être transmise directement, à cause de la topologie de grille. Par contre, cette valeur est contenue dans une colonne échangée à un processeurs voisin de $P$ lors de la première étape (voir figure \ref{datas2}), ce qui permet de demander directement la valeur aux processeurs voisins.
+Dans le cas général, il y a une petite subtilité. Pour pouvoir mettre à jour les quatres éléments aux "coins", il faut disposer également d'une donnée de chaque processeurs voisin selon la diagonale. Mais cette donnée ne peut pas être transmise directement, à cause de la topologie de grille. Imaginons maintenant que l'on échange d'abord les colonnes voisines, à cette étape les voisins en haut et en bas d'un processeur connaissent ces "coins" (voir figure \ref{datas2}), il suffit donc d'échanger ces valeurs en même temps que les lignes voisines.
 
 \begin{figure}[!h]
   \centering
@@ -137,7 +141,8 @@ Une solution pourrait être de les faire passer à travers toute une ligne (resp
 
 \subsubsection*{Et sur une topologie en anneau ?}
 
-Sur une topologie en anneau la situation se complique... Les transmissions verticales devront passer par exactement $p-1$ processeurs intermédiaires avant d'arriver à destination. Toutefois, on peut réutiliser la technique vue en cours pour le broadcast généralisé (où toutes les données transitent en même temps) pour les deux transmissions verticales que doivent accomplir chaque processeurs.
+%Sur une topologie en anneau la situation se complique... Les transmissions verticales devront passer par exactement $p-1$ processeurs intermédiaires avant d'arriver à destination. Toutefois, on peut réutiliser la technique vue en cours pour le broadcast généralisé (où toutes les données transitent en même temps) pour les deux transmissions verticales que doivent accomplir chaque processeurs.
+Sur une topologie en anneau la répartion en grille impose clairement de faire transiter des informations par les processus, les transmissions verticales devraient passer par exactement $p-1$ processeurs intermédiaires. Cependant en attribuant des lignes complètes et consécutives de la grille on n'utilise que 2 communications directes par processeur. La quantité de données passant par chaque lien sera du même ordre de grandeur, $\frac{p-1}{p}$ fois celle d'avant, mais la latence sera diminuée de $2pL$ à $2L$.
 
 \section{Average automata}
 
@@ -203,7 +208,7 @@ L'algorithme est donc le suivant : \\
 
 \subsubsection*{Complexité en temps}
 
-Dans cette question, on pose $T_{prod}(N,p)$ le temps nécessaire pour calculer le produit de deux matrices de taille $N \times N$ sur une grille de $p \times p$ processeurs. On admet que l'on dispose d'un algorithme qui s'execute en temps $T_{prod}(N,p) = ... $ (un tel algorithme a été vu en cours). % TODO : Complexité à retrouver dans le cours
+Dans cette question, on pose $T_{prod}(N,p)$ le temps nécessaire pour calculer le produit de deux matrices de taille $N \times N$ sur une grille de $p \times p$ processeurs. On admet que l'on dispose d'un algorithme qui s'execute en temps $T_{prod}(N,p) = max \left( pL + N^2 b, \frac{N^3}{p} \omega \right) $ (un tel algorithme a été vu en cours).
 
 Pour calculer la matrice $\Delta$, il suffit juste d'initialiser une matrice avec $N^4$ éléments (car $\Delta \in \mathcal{M}_{N^2}(\mathbb{R})$). Cette initiatisation peut se faire de manière automatique car on a : 
 
@@ -225,11 +230,13 @@ $$ \text{Où :} \quad B_N = \frac{1-p}{4} \times I_N \quad \text{et} \quad A_N =
 					\frac{1-p}{4} & \frac{1-p}{4} & \frac{1-p}{4} & p
 	 \end{pmatrix}  $$ \\
 
-Pour l'exponentiation rapide, on sait qu'on effectue dans le pire des cas $O(\text{log t})$ produits de matrices, soit une complexité en $O(T_{prod}(N^2,p)\times \text{log t})$ pour le calcul de $\Delta^t$. \\ % TODO : Retrouver la complexité pire cas pour exponentiation rapide, et remplacer T_prod
+Pour l'exponentiation rapide, on sait qu'on effectue dans le pire des cas $\Theta(\text{log t})$ produits de matrices, soit une complexité en $\Theta(T_{prod}(N^2,p)\times \text{log t}) = \Theta \left( max \left( pL + N^4 b, \frac{N^6}{p} \omega \right) \times \text{log t} \right) $ pour le calcul de $\Delta^t$. \\
 
-Enfin, le dernier produit matrice/vecteur se fait en temps $T_{prodVect} = $. \\ % TODO : retrouver la complexité
+Enfin, le dernier produit matrice/vecteur se fait en temps $T_{prodVect} = max \left( pL + N^2 b, \frac{N^4}{p} \omega \right) $ (vu en cours, en utilisant $\sqrt{p}$ processeurs).
 
-D'où une complexité temporelle finale en ... % TODO : terminer le calcul
+D'où une complexité temporelle finale de l'ordre de : $max \left( pL + N^4 b, \frac{N^6}{p} \omega \right) \times \text{log t} + max \left( pL + N^2 b, \frac{N^4}{p} \omega \right)$.
+
+Remarque : le deuxième terme de la somme est ici négligeable.
 
 \subsubsection*{Complexité en espace}
 
@@ -237,19 +244,19 @@ Concernant la complexité en espace, chaque processeur dispose d'un bloc de $\De
 
 \subsubsection*{Comparaison dans le cas général} 
 
-% TODO : Comparer les complexités une fois calculées
+Si on regarde les complexités temporelles, 
 
 \subsection*{Question 6}
 
-Si le réseau de processeurs forme une clique, l'algorithme précédent change uniquement dans les communications à effectuer. \\
+Si le réseau de processeurs forme une clique, l'algorithme précédent change uniquement dans la manière dont les communications sont effectuées. \\
 
-Concernant les envois de données, ceux-ci peuvent être effectués sans passer par tout le réseau, chaque envoi aura donc un coût identique de ... \\ % TODO
+Concernant les envois de données, ceux-ci peuvent être effectués sans passer par tout le réseau, chaque envoi aura donc un coût identique de $L + \frac{N^2}{p} b$. \\
 
 Le calcul de $\Delta$ reste inchangé, sachant qu'il ne nécessite aucune communication entre processeurs. \\
 
 Pour calculer $\Delta^t$, on peut envoyer directement les blocs de matrices de la source à la destination. Sachant que pour calculer un bloc de taille ${\left( \frac{N}{p} \right)}^2$ il faut $2p$ blocs, le coût de cette opération est de $2p \times \left( L + {\left( \frac{N}{p} \right)}^2 \right) b$. \\
 
-Enfin, la même idée pour calculer le dernier produit matrice/vecteur... % TODO argumenter 
+Enfin, on utilise la même idée pour calculer le dernier produit matrice/vecteur, 
 
 \subsection*{Question 7}
 
