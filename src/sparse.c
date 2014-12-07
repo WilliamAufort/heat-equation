@@ -637,6 +637,12 @@ void bsenddata(int proc)
 	MPI_Bcast(work_first_col, nb_row, MPI_DOUBLE, proc, MPI_COMM_WORLD);
 	MPI_Bcast(work_last_col, nb_row, MPI_DOUBLE, proc, MPI_COMM_WORLD);
 	MPI_Bcast(work_matrix, (nb_row-2)*(nb_col-2), MPI_DOUBLE, proc, MPI_COMM_WORLD);
+	sourcelist* s=sources;
+	while(s!=NULL)
+	{
+		rotatesetheatapply(proc%N,proc/N,s->i,s->j,s->t,work_matrix,work_first_row,work_last_row,work_first_col,work_last_col);
+		s=s->next;
+	}
 }
 
 void receiveandwork(int proc)
