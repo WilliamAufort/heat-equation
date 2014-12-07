@@ -460,7 +460,7 @@ void drawbloc(double* data,int bloci,int blocj)
 	int i,j;
 	for(i=1;i<nb_col-1;i++)
 		for(j=1;j<nb_row-1;j++)
-			setcolor(data[(j-1)*(nb_col-2)+(i-1)],bloci+i,blocj+j);	
+			setcolor(0.5/*data[(j-1)*(nb_col-2)+(i-1)]*/,bloci+i,blocj+j);	
 }
 
 void drawfirstrow(double* data,int bloci,int blocj)
@@ -521,7 +521,6 @@ void receiveandshow()
 		MPI_Recv(work_first_col, nb_row, MPI_DOUBLE, i, 7, MPI_COMM_WORLD,&status);
 		MPI_Recv(work_last_col, nb_row, MPI_DOUBLE, i, 8, MPI_COMM_WORLD,&status);
 		MPI_Recv(work_matrix, (nb_row-2)*(nb_col-2), MPI_DOUBLE, i, 9, MPI_COMM_WORLD,&status);
-		printf("REceive from %d\n",i);
 		c = i % nb_proc;
 		r = i / nb_proc;
 		drawbloc(work_matrix,c,r);
