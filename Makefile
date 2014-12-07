@@ -8,6 +8,9 @@ all: $(EXEC)
 average : src/average.c
 	$(CC) $(CFLAGS) $^ -o $@ -lm
 
+constants : src/constants.c
+	$(CC) $(CFLAGS) $^ -o $@ -lm
+
 clean:
 	rm -f $(EXEC) *~
 	rm -f src/*~
