@@ -460,7 +460,7 @@ void drawbloc(double* data,int bloci,int blocj)
 	int i,j;
 	for(i=1;i<nb_col-1;i++)
 		for(j=1;j<nb_row-1;j++)
-			setcolor(0.5,bloci+i,blocj+j);	
+			setcolor(data[(j-1)*(nb_col-2)+(i-1)],bloci+i,blocj+j);	
 }
 
 void drawfirstrow(double* data,int bloci,int blocj)
@@ -469,17 +469,18 @@ void drawfirstrow(double* data,int bloci,int blocj)
 	blocj*=nb_row;
 	int i;
 	for(i=0;i<nb_col;i++)
-		setcolor(0.5/*data[i]*/,bloci+i,blocj);	
+		setcolor(data[i],bloci+i,blocj);	
 }
 
 void drawlastrow(double* data,int bloci,int blocj)
 {
 	bloci*=nb_col;
-	blocj*=(nb_row+1);
+	blocj++;
+	blocj*=nb_row;
 	blocj--;
 	int i;
 	for(i=0;i<nb_col;i++)
-		setcolor(0.5/*data[i]*/,bloci+i,blocj);	
+		setcolor(data[i],bloci+i,blocj);	
 }
 
 void drawfirstcol(double* data,int bloci,int blocj)
@@ -488,12 +489,13 @@ void drawfirstcol(double* data,int bloci,int blocj)
 	blocj*=nb_row;
 	int i;
 	for(i=0;i<nb_col;i++)
-		setcolor(0.5/*data[i]*/,bloci,blocj+i);	
+		setcolor(data[i],bloci,blocj+i);	
 }
 
 void drawlastcol(double* data,int bloci,int blocj)
 {
-	bloci*=(nb_col+1);
+	bloci*=nb_col;
+	bloci++;
 	blocj*=nb_row;
 	bloci--;
 	int i;
@@ -514,7 +516,7 @@ void receiveandshow()
 {
 	MPI_Status status;
 	int c,r,i;
-	N=(int)sqrt(nb_proc);
+	int N=(int)sqrt(nb_proc);
 	for(i=0;i<nb_proc;i++)
 	{
 		MPI_Recv(work_first_row, nb_col, MPI_DOUBLE, i, 5, MPI_COMM_WORLD,&status);
