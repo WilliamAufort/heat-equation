@@ -622,7 +622,7 @@ int main(int argc, char* argv[])
 	senddata();
 	if(my_id==0)
 	{
-		gfx_open(width,height,"Output");
+		gfx_open(width,height,"Output window");
 		receiveandshow();
 	}
 
