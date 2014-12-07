@@ -210,7 +210,7 @@ void compute_image(double p)
 	}
 
 	//first and last columns of work_matrix
-	for(j=1;i < nb_row_mid-1;j++)
+	for(j=1;j < nb_row_mid-1;j++)
 	{
 		work_matrix[nb_col_mid*j]=average(
 			matrix[nb_col_mid*j],

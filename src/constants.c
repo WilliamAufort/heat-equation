@@ -170,7 +170,6 @@ void compute_image(double p)
 	MPI_Send(last_row, nb_col, MPI_DOUBLE, south, 2, MPI_VERTICAL);
 	MPI_Send(first_col, nb_row, MPI_DOUBLE, west, 3, MPI_HORIZONTAL);
 	MPI_Send(last_col, nb_row, MPI_DOUBLE, east, 4, MPI_HORIZONTAL);
-	 printf("debug %d %d %d %d\n",north,south,west,east);
     
     /* Do the computations */
 
@@ -236,7 +235,7 @@ void compute_image(double p)
 	}
 
 	//first and last columns of work_matrix
-	for(j=1;i < nb_row_mid-1;j++)
+	for(j=1;j < nb_row_mid-1;j++)
 	{
 		work_matrix[nb_col_mid*j]=average(
 			matrix[nb_col_mid*j],
