@@ -42,7 +42,7 @@ Nous donnons ici d'abord l'implémentation de l'automate cellulaire de la partie
 L'idée est de disposer les processeurs selon une grille. Chaque processeur dispose d'un bloc de $\left( cac{N}{p} \right) ^2$ éléments.\\
 
 Considérons un processeur $P$. Celui-ci dispose des données :
-$$(\widehat{x_{i,j}})= \left\{ x_{l,m} \diagup ki\leq l<(k+1)i,cj\leq m<(c+1)j \right\}$$
+$$(\widehat{x_{i,j}})= \left\{ x_{l,m} / ki\leq l<(k+1)i,cj\leq m<(c+1)j \right\}$$
 
 c'est a dire d'un morceau de la grille de taille $k \times c$.
 
@@ -282,7 +282,26 @@ Voir le fichier \texttt{sparse.c}.
 
 \subsection*{Question 10}
 
+
 Avec une constante un point fixe est la distribution uiforme sur la grille, c'est à dire toute les cases ont la même température que la source. 
+
+Intuitivement, si on a au moins une constante, sa valeur va être diffusée à travers la grille dans un certain voisinage, comme nous avons pu l'observer sur des exemples lors des tests de notre programme.
+Cependant, donner une expression explicite de la limite semble être un peu délicat. On peut intuiter que la limite se rapprocherai d'un point fixe de la fonction $\delta^+$ (en effet, quand on est proche de la limite, on a tendance à y rester). Comme $\delta^+$ est linéaire, si elle possède un point fixe, alors en multipliant par une constante on trouve un autre point fixe. On peut tout de même représenter le système d'équations par une matrice, qui reprendrait un peu la forme de la matrice $\Delta$, dont on rappelle l'expression :
+$$ \Delta = 
+	\left(\begin{array}{c|c|c|c}
+    A_N & B_N & \dots & B_N  \\
+	\hline
+	B_N & A_N & \dots & B_N \\
+	\hline
+	\dots & \dots & \dots & B_N \\
+	\hline
+	B_N & \dots & \dots & A_N
+	\end{array} \right)$$
+
+Cependant ici toutes les valeurs sont variables ici. Pour modéliser le fait que certaines valeurs soient des constantes, il suffit de remplacer la bonne ligne par une ligne de la forme $L_i = \left( 0, \dots, 0, 1, 0, \dots, 0 \right)$ (la valeur 1 étant à la ième position). Ainsi, par application de $\Delta$, cette valeur resterai inchangée.
+
+On pourrait alors chercher un vecteur $X$ tel que $\Delta X = X$ (c'est la définition d'un point fixe de $\delta^+$).
+
 
 \subsection*{Question 11}
 
