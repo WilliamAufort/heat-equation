@@ -515,11 +515,11 @@ void receiveandshow()
 	int c,r,i;
 	for(i=0;i<nb_proc;i++)
 	{
-		MPI_Send(work_first_row, nb_col, MPI_DOUBLE, i, 5, MPI_COMM_WORLD);
-		MPI_Send(work_last_row, nb_col, MPI_DOUBLE, i, 6, MPI_COMM_WORLD);
-		MPI_Send(work_first_col, nb_row, MPI_DOUBLE, i, 7, MPI_COMM_WORLD);
-		MPI_Send(work_last_col, nb_row, MPI_DOUBLE, i, 8, MPI_COMM_WORLD);
-		MPI_Send(work_matrix, (nb_row-2)*(nb_col-2), MPI_DOUBLE, i, 9, MPI_COMM_WORLD);
+		MPI_Recv(work_first_row, nb_col, MPI_DOUBLE, i, 5, MPI_COMM_WORLD);
+		MPI_Recv(work_last_row, nb_col, MPI_DOUBLE, i, 6, MPI_COMM_WORLD);
+		MPI_Recv(work_first_col, nb_row, MPI_DOUBLE, i, 7, MPI_COMM_WORLD);
+		MPI_Recv(work_last_col, nb_row, MPI_DOUBLE, i, 8, MPI_COMM_WORLD);
+		MPI_Recv(work_matrix, (nb_row-2)*(nb_col-2), MPI_DOUBLE, i, 9, MPI_COMM_WORLD);
 		c = i % nb_proc;
 		r = i / nb_proc;
 		drawbloc(work_matrix,c,r);
