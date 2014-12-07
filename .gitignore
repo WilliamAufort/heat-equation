@@ -30,6 +30,8 @@
 *.x86_64
 *.hex
 average
+constants
+gfx
 
 # Latex ignores
 

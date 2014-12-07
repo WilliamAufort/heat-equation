@@ -8,7 +8,7 @@
 #include <mpi.h>
 #include <math.h>
 #include <assert.h>
-
+#include "gfx.h"
 /*************************************************\
 | One processor works on several buffers :
 | - one matrix which contains the initial
@@ -90,7 +90,7 @@ void init_datas()
 void addsource(int i_,int j_,double t_)
 {
 	sourcelist* o=sources;
-	sources=malloc(sizeof(list));
+	sources=malloc(sizeof(sourcelist));
 	sources->i=i_;
 	sources->j=j_;
 	sources->t=t_;
@@ -419,6 +419,150 @@ void majsources()
 	}
 }
 
+//drawing
+double Gamma = 0.80;
+double IntensityMax = 255;
+
+/** Taken from Earl F. Glynn's web page:
+* <a href="http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm">Spectra Lab Report</a>
+* */
+void waveLengthToRGB(double Wavelength){
+	double factor;
+	double Red,Green,Blue;
+
+	if((Wavelength >= 380) && (Wavelength<440)){
+		Red = -(Wavelength - 440) / (440 - 380);
+		Green = 0.0;
+		Blue = 1.0;
+	}else if((Wavelength >= 440) && (Wavelength<490)){
+		Red = 0.0;
+		Green = (Wavelength - 440) / (490 - 440);
+		Blue = 1.0;
+	}else if((Wavelength >= 490) && (Wavelength<510)){
+		Red = 0.0;
+		Green = 1.0;
+		Blue = -(Wavelength - 510) / (510 - 490);
+	}else if((Wavelength >= 510) && (Wavelength<580)){
+		Red = (Wavelength - 510) / (580 - 510);
+		Green = 1.0;
+		Blue = 0.0;
+	}else if((Wavelength >= 580) && (Wavelength<645)){
+		Red = 1.0;
+		Green = -(Wavelength - 645) / (645 - 580);
+		Blue = 0.0;
+	}else if((Wavelength >= 645) && (Wavelength<781)){
+		Red = 1.0;
+		Green = 0.0;
+		Blue = 0.0;
+	}else{
+		Red = 0.0;
+		Green = 0.0;
+		Blue = 0.0;
+	};
+
+	// Let the intensity fall off near the vision limits
+
+	if((Wavelength >= 380) && (Wavelength<420)){
+		factor = 0.3 + 0.7*(Wavelength - 380) / (420 - 380);
+	}else if((Wavelength >= 420) && (Wavelength<701)){
+		factor = 1.0;
+	}else if((Wavelength >= 701) && (Wavelength<781)){
+		factor = 0.3 + 0.7*(780 - Wavelength) / (780 - 700);
+	}else{
+		factor = 0.0;
+	};
+	gfx_color(
+		Red==0.0 ? 0 : (int) (IntensityMax * pow(Red * factor, Gamma)),
+		Green==0.0 ? 0 : (int) (IntensityMax * pow(Green * factor, Gamma)),
+		Blue==0.0 ? 0 : (int) (IntensityMax * pow(Blue * factor, Gamma)));
+
+}
+//380-781
+
+void setcolor(double x,int i,int j)
+{
+	waveLengthToRGB(380+x*(781-380));
+	gfx_point(i,j);
+}
+
+void drawbloc(double* data,int bloci,int blocj)
+{
+	bloci*=nb_col;
+	blocj*=nb_row;
+	int i,j;
+	for(i=1;i<nb_col-1;i++)
+		for(j=1;j<nb_row-1;j++)
+			setcolor(data[(j-1)*(nb_col-2)+(i-1)],bloci+i,blocj+j);	
+}
+
+void drawfirstrow(double* data,int bloci,int blocj)
+{
+	bloci*=nb_col;
+	blocj*=nb_row;
+	int i;
+	for(i=0;i<nb_col;i++)
+		setcolor(data[i],bloci+i,blocj);	
+}
+
+void drawlastrow(double* data,int bloci,int blocj)
+{
+	bloci*=nb_col;
+	blocj*=(nb_row+1);
+	blocj--;
+	int i;
+	for(i=0;i<nb_col;i++)
+		setcolor(data[i],bloci+i,blocj);	
+}
+
+void drawfirstcol(double* data,int bloci,int blocj)
+{
+	bloci*=nb_col;
+	blocj*=nb_row;
+	int i;
+	for(i=0;i<nb_col;i++)
+		setcolor(data[i],bloci,blocj+i);	
+}
+
+void drawlastcol(double* data,int bloci,int blocj)
+{
+	bloci*=(nb_col+1);
+	blocj*=nb_row;
+	bloci--;
+	int i;
+	for(i=0;i<nb_col;i++)
+		setcolor(data[i],bloci,blocj+i);	
+}
+
+void senddata()
+{
+	MPI_Send(first_row, nb_col, MPI_DOUBLE, 0, 5, MPI_COMM_WORLD);
+	MPI_Send(last_row, nb_col, MPI_DOUBLE, 0, 6, MPI_COMM_WORLD);
+	MPI_Send(first_col, nb_row, MPI_DOUBLE, 0, 7, MPI_COMM_WORLD);
+	MPI_Send(last_col, nb_row, MPI_DOUBLE, 0, 8, MPI_COMM_WORLD);
+	MPI_Send(matrix, (nb_row-2)*(nb_col-2), MPI_DOUBLE, 0, 9, MPI_COMM_WORLD);
+}
+
+void receiveandshow()
+{
+	int c,r,i;
+	for(i=0;i<nb_proc;i++)
+	{
+		MPI_Send(work_first_row, nb_col, MPI_DOUBLE, i, 5, MPI_COMM_WORLD);
+		MPI_Send(work_last_row, nb_col, MPI_DOUBLE, i, 6, MPI_COMM_WORLD);
+		MPI_Send(work_first_col, nb_row, MPI_DOUBLE, i, 7, MPI_COMM_WORLD);
+		MPI_Send(work_last_col, nb_row, MPI_DOUBLE, i, 8, MPI_COMM_WORLD);
+		MPI_Send(work_matrix, (nb_row-2)*(nb_col-2), MPI_DOUBLE, i, 9, MPI_COMM_WORLD);
+		c = i % nb_proc;
+		r = i / nb_proc;
+		drawbloc(work_matrix,c,r);
+		drawfirstcol(work_first_col,c,r);
+		drawlastcol(work_last_col,c,r);
+		drawfirstrow(work_first_row,c,r);
+		drawlastrow(work_last_row,c,r);
+	}		
+}
+
+
 /*************\
 | The program |
 \*************/
@@ -500,8 +644,29 @@ int main(int argc, char* argv[])
 	}
 	fclose(f);
 
+	//showing
+	senddata();
+	if(my_id==0)
+	{
+		gfx_open(width,height,"Output");
+		receiveandshow();
+	}
+
 	free_datas();
 	MPI_Finalize();	
+	if(my_id==0)
+	{
+		char c;
+		while(1) 
+		{
+			// Wait for the user to press a character.
+			c = gfx_wait();
+
+			// Quit if it is the letter q.
+			if(c=='q') break;
+		}
+	}
+
 
 	return 0;
 }
