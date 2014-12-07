@@ -21,13 +21,17 @@ int main(int argc, char* argv[])
 	double value; 
 	while((EOF != scanf("%d %d %d %lf", &cas, &i, &j, &value))) 
 	{
-		fprintf(f,"%d %d %d %lf", cas, i, j, value);
+		fprintf(f,"%d %d %d %lf\n", cas, i, j, value);
 	}
 	fclose(f);
 
 	//showing
 	char cmd[1024];
+	
 	sprintf(cmd,"mpirun -np %d constants input.txt",nbp*nbp);
+	printf("Now launching \n");
+	printf(cmd);
+	printf("\n");
 	system(cmd);
 	return 0;
 }
