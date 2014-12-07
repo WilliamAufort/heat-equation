@@ -1,6 +1,6 @@
 /*********************************************\
 | Distributed algorithm to compute X^t+1 with |
-|             grid of processors              |
+|  grid of processors (using a sparse method  |
 \*********************************************/
 
 #include <stdlib.h>
@@ -10,21 +10,6 @@
 #include <assert.h>
 #include <math.h>
 #include "gfx.h"
-
-/*************************************************\
-| One processor works on several buffers :
-| - one matrix which contains the initial
-| values of X which are not on the border;
-| - 4 "vectors" which corresponds to the 2 
-| lines and 2 columns at the border (used to
-| send and to do the computations;
-| - 4 other vectors which are used for 
-| receving data from the neighbourgs.
-|
-| We use these vectors instead of global matrix,
-| because we don't need to copy data (especiallty 
-| before SEND) during the execution.
-\*************************************************/
 
 int my_id, nb_proc;      // the id of the processor, and the number of processors
 int nb_col,nb_row;       // number of rows (and columns) of the subgrid handeld by the proc
@@ -359,7 +344,8 @@ void compute_image(double p)
 	swap(&work_last_col,&last_col);
 }
 
-//set data
+/* set data */
+
 void setheat(int i,int j,double t)
 {
 	i-=my_col*nb_col;
@@ -454,6 +440,8 @@ double getlocalheat(int i,int j,double* m,double* fr,double* lr,double* fc,doubl
 	
 }
 
+/* Rotation */
+
 void rotatesetheatapply(int bloci,int blocj,int initiali,int initialj,double t,double* m,double* fr,double* lr,double* fc,double* lc)
 {
 	//int N=(int)sqrt(nb_proc);
@@ -504,7 +492,8 @@ int divides(int a, int b) {
 	return ((b / a) * a == b);
 }
 
-//drawing
+/* drawing */
+
 double Gamma = 0.80;
 double IntensityMax = 255;
 

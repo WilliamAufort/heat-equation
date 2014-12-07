@@ -14,7 +14,6 @@ int main(int argc, char* argv[])
 	assert(f != NULL);
 	scanf("%d %d %lf %d \n", &width, &height, &p, &t);
 	int nbp = (int)sqrt(width);
-	printf("nbp = %d", nbp);
 	while( width % nbp != 0) {
 		nbp--;
 	}

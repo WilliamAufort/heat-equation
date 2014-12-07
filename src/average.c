@@ -314,7 +314,7 @@ void compute_image(double p)
 	swap(&work_last_col,&last_col);
 }
 
-//set data
+/* set data */
 void setheat(int i,int j,double t)
 {
 	i-=my_col*nb_col;
@@ -387,13 +387,14 @@ int divides(int a, int b) {
 	return ((b / a) * a == b);
 }
 
-//drawing
+/* drawing */
 double Gamma = 0.80;
 double IntensityMax = 255;
 
 /** Taken from Earl F. Glynn's web page:
 * <a href="http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm">Spectra Lab Report</a>
 * */
+
 void waveLengthToRGB(double Wavelength){
 	double factor;
 	double Red,Green,Blue;

@@ -3,6 +3,8 @@
 |             grid of processors              |
 \*********************************************/
 
+/* Version with constants */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <mpi.h>
@@ -340,7 +342,8 @@ void compute_image(double p)
 }
 
 
-//set data
+/* set data */
+
 void setheat(int i,int j,double t)
 {
 	i-=my_col*nb_col;
@@ -417,7 +420,8 @@ void majsources()
 	}
 }
 
-//drawing
+/* drawing */
+
 double Gamma = 0.80;
 double IntensityMax = 255;
 
@@ -591,8 +595,8 @@ int main(int argc, char* argv[])
 	init_datas();
 	init_communicators();
 
-  	assert(width == height);//"Grid have to be a square"
-	assert(size==nb_row*nb_col*nb_proc);//"We considered the number of processors is a square"
+  	assert(width == height); // Grid have to be a square
+	assert(size==nb_row*nb_col*nb_proc); // We consider that the number of processors is a square
 	if (my_id == 0) {
 		printf("%d %d %lf %d \n", width, height, p, t);
 	}
@@ -621,7 +625,6 @@ int main(int argc, char* argv[])
 	{
 		majsources();
 		compute_image(p);
-		//printf("(%d,%d) step %d\n",my_col,my_row,step);
 	}
 	if(cas==2)
 	{
