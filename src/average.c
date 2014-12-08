@@ -355,7 +355,7 @@ void printheat(int i,int j)
 	if((0<=i)&&(i<nb_col)
 	&& (0<=j)&&(j<nb_row))
 	{
-		printf("temperature of case %i,%i is ",i+my_col*nb_col,j+my_row*nb_row);
+		printf("temperature of cell %i,%i is ",i+my_col*nb_col,j+my_row*nb_row);
 		//center
 		if((0<i)&&(i<nb_col-1)
 		&& (0<j)&&(j<nb_row-1))
